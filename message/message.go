@@ -1,9 +1,12 @@
 package message
-import "math/rand"
+import (
+	"math/rand"
+	"fmt"
+)
 
 type BeverageType int
 
-var cId int = 0
+var cId uint = 0
 var rd = rand.New(rand.NewSource(1))
 
 const (
@@ -16,17 +19,21 @@ const (
 )
 
 type Order struct {
-	Id int
+	Id uint
 	PlayerId string
 	Type BeverageType
 }
 
-func NewOrder(t BeverageType) (o*Order) {
+func (o Order) String() string {
+	return fmt.Sprintf("order with id %d, playerId %s, and beverage type %d", o.Id, o.PlayerId, o.Type)
+}
+
+func NewOrder(t BeverageType) (o *Order) {
 	o=new(Order)
 	o.Type = t
 	o.Id=cId
 	cId ++
-	return
+	return o
 }
 
 func NextBeverageType() (t BeverageType) {
