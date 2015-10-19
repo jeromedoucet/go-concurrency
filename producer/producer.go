@@ -10,16 +10,14 @@ type Producer struct {
 }
 
 
-func NewProducer(stop <-chan struct {}) (p * Producer) {
+func NewProducer(stop <-chan struct {}) (p *Producer) {
 	p = new(Producer)
 	p.stop = stop
 	return
 }
 
-func (p * Producer) Start() <- chan *message.Order {
-	c := make(chan *message.Order)
+func (p * Producer) Start(c chan *message.Order) {
 	go func() {
-		defer close(c)
 		for {
 			m := message.NewOrder(message.NextBeverageType())
 			select {
@@ -30,7 +28,6 @@ func (p * Producer) Start() <- chan *message.Order {
 			}
 		}
 	}()
-	return c
 }
 
 

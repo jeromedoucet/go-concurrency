@@ -13,14 +13,6 @@ func TestCreateNewOrder(t *testing.T) {
 	if (o.Type != message.RedWine) {
 		t.Error("bad type of beverage")
 	}
-	for i := 0; i < 15; i ++ {
-		// now check of order id
-		c := i
-		if (o.Id != c) {
-			t.Errorf("Bad id. Expected %d, got %d", c, o.Id)
-		}
-		o=message.NewOrder(message.Cocktail)
-	}
 }
 
 // test the beverage type randomization

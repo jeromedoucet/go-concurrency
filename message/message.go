@@ -2,11 +2,11 @@ package message
 import (
 	"math/rand"
 	"fmt"
+	"time"
 )
 
 type BeverageType int
 
-var cId uint = 0
 var rd = rand.New(rand.NewSource(1))
 
 const (
@@ -19,8 +19,9 @@ const (
 )
 
 type Order struct {
-	Id uint
+	Id int64
 	PlayerId string
+	Valid bool
 	Type BeverageType
 }
 
@@ -31,8 +32,7 @@ func (o Order) String() string {
 func NewOrder(t BeverageType) (o *Order) {
 	o=new(Order)
 	o.Type = t
-	o.Id=cId
-	cId ++
+	o.Id=time.Now().Unix()
 	return o
 }
 
