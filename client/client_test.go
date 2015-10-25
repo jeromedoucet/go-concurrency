@@ -1,7 +1,6 @@
 package client_test
 import (
 	"testing"
-	"gopkg.in/redis.v3"
 	"time"
 	"go-concurrency/client"
 	"encoding/json"
@@ -32,16 +31,14 @@ func newMock()(mr * mockRedisC, mn * mockNsq){
 }
 
 
-func (m * mockRedisC) Set(key string, value interface{}, ttl time.Duration) (s *redis.StatusCmd) {
-	s = redis.NewStatusCmd()
+func (m * mockRedisC) Set(key string, value interface{}, ttl time.Duration) (error) {
 	m.orderChan <- &value
 	m.setVal = value
 	m.countSet ++
 	return
 }
 
-func (m * mockRedisC) Get(key string) (s *redis.StringCmd) {
-	s = redis.NewStringCmd()
+func (m * mockRedisC) Get(key string) (struct{}, error) {
 	m.countGet ++
 	return
 }

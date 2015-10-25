@@ -2,6 +2,7 @@ package producer
 
 import (
 	"go-concurrency/message"
+	"log"
 )
 
 
@@ -17,11 +18,13 @@ func NewProducer(stop <-chan struct {}) (p *Producer) {
 }
 
 func (p * Producer) Start(c chan *message.Order) {
+	log.Println("starting a producer")
 	go func() {
 		for {
 			m := message.NewOrder(message.NextBeverageType())
 			select {
 			case <-p.stop:
+			log.Println("stopping producer")
 				break
 			case c <- m:
 			default:

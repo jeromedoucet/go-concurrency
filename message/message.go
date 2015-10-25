@@ -32,7 +32,7 @@ func (o Order) String() string {
 func NewOrder(t BeverageType) (o *Order) {
 	o=new(Order)
 	o.Type = t
-	o.Id=time.Now().Unix()
+	o.Id=time.Now().UnixNano()
 	return o
 }
 

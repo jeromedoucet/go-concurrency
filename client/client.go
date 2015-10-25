@@ -1,10 +1,11 @@
 package client
 import (
 	"time"
-	"gopkg.in/redis.v3"
 	"go-concurrency/message"
 	"go-concurrency/producer"
 	"encoding/json"
+	"log"
+	"strconv"
 )
 
 // this client is an aggregation of one DBClient (Redis for the moment)
@@ -20,8 +21,8 @@ type Client struct {
 }
 
 type DbClient interface{
-	Set(string, interface{}, time.Duration) *redis.StatusCmd
-	Get(string) *redis.StringCmd
+	Set(string, interface{}, time.Duration) error
+	Get(string) (struct{}, error)
 }
 
 type BrokerProducer interface {
@@ -32,7 +33,6 @@ type BrokerProducer interface {
 // the topic to use for the broker and the number of order producer to launch
 func StartClient(dbClient DbClient, brokerProducer BrokerProducer, topic string, countP int) (c *Client, err error) {
 	c = new(Client)
-	// todo mettre le cas d'erreur
 	c.redisCl = dbClient
 	c.brokerProducer = brokerProducer
 	c.mChan = make(chan *message.Order)
@@ -51,9 +51,18 @@ func (c * Client) listen() {
 		o := <-c.mChan
 		if o != nil {
 			json,_ := json.Marshal(o)
-			c.redisCl.Set(string(o.Id), json, 10000000)
-			c.brokerProducer.Publish(c.topic, json) // TODO do something with err !
+			errR :=c.redisCl.Set(strconv.Itoa(int(o.Id)), json, 20)
+			if errR != nil {
+				log.Printf("error during redis registration: %v",errR)
+			} else {
+				errB := c.brokerProducer.Publish(c.topic, json)
+				if errB != nil {
+					log.Printf("error during broker registration: %v",errB)
+				}
+			}
 		}else {
+			log.Println("receive nil message. Stop client")
+			c.StopClient()
 			break
 		}
 	}
