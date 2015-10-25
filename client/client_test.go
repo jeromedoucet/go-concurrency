@@ -4,6 +4,10 @@ import (
 	"gopkg.in/redis.v3"
 	"time"
 	"go-concurrency/client"
+	"encoding/json"
+	"go-concurrency/message"
+	"bytes"
+	"encoding/binary"
 )
 
 type mockRedisC struct {
@@ -46,7 +50,11 @@ func TestSaveOrderInRedis(t *testing.T) {
 	if mock.countSet < 1 {
 		t.Errorf("set redis not called")
 	} else {
-		t.Log("the last setted value is : ", mock.setVal)
+		var m message.Order
+		b := &bytes.Buffer{}
+		binary.Write(b, binary.BigEndian, mock.setVal)
+		json.Unmarshal(b.Bytes(), &m)
+		t.Log("the last setted value is : ", m)
 	}
 	c.StopClient()
 }

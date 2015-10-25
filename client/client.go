@@ -4,6 +4,7 @@ import (
 	"gopkg.in/redis.v3"
 	"go-concurrency/message"
 	"go-concurrency/producer"
+	"encoding/json"
 )
 
 type Client struct {
@@ -35,7 +36,8 @@ func (c * Client) listen() {
 	for {
 		o := <-c.mChan
 		if o != nil {
-			c.redisCl.Set(string(o.Id), o, 10000000)
+			json,_ := json.Marshal(o)
+			c.redisCl.Set(string(o.Id), json, 10000000)
 		}else {
 			break
 		}
