@@ -1,8 +1,8 @@
 package producer_test
 import (
 	"testing"
-	"xebia.xke.golang/producer"
-	"xebia.xke.golang/message"
+	"go-concurrency/producer"
+	"go-concurrency/message"
 )
 
 

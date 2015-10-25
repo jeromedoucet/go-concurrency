@@ -3,7 +3,7 @@ package message_test
 
 import (
 	"testing"
-	"xebia.xke.golang/message"
+	"go-concurrency/message"
 )
 
 // basic test

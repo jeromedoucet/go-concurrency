@@ -3,7 +3,7 @@ import (
 	"testing"
 	"gopkg.in/redis.v3"
 	"time"
-	"xebia.xke.golang/client"
+	"go-concurrency/client"
 )
 
 type mockRedisC struct {

@@ -2,8 +2,8 @@ package client
 import (
 	"time"
 	"gopkg.in/redis.v3"
-	"xebia.xke.golang/message"
-	"xebia.xke.golang/producer"
+	"go-concurrency/message"
+	"go-concurrency/producer"
 )
 
 type Client struct {

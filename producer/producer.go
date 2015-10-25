@@ -1,7 +1,7 @@
 package producer
 
 import (
-	"xebia.xke.golang/message"
+	"go-concurrency/message"
 )
 
 
