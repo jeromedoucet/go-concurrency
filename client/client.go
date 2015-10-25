@@ -7,6 +7,10 @@ import (
 	"encoding/json"
 )
 
+// this client is an aggregation of one DBClient (Redis for the moment)
+// and one broker client (Nsq here)
+// will receive order created from some producer, register it on the Db
+// and send it to the waiters through the broker
 type Client struct {
 	mChan chan *message.Order
 	stopChan chan struct {}
@@ -24,6 +28,8 @@ type BrokerProducer interface {
 	Publish(topic string, body []byte) error
 }
 
+// create and start a new client with one DataBase client, one broker client
+// the topic to use for the broker and the number of order producer to launch
 func StartClient(dbClient DbClient, brokerProducer BrokerProducer, topic string, countP int) (c *Client, err error) {
 	c = new(Client)
 	// todo mettre le cas d'erreur
