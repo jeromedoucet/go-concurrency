@@ -18,9 +18,16 @@ type mockRedisC struct {
 	orderChan chan *interface{}
 }
 
-func newMock()(m * mockRedisC){
-	m = new(mockRedisC)
-	m.orderChan = make(chan *interface{})
+type mockNsq struct {
+	countProduce int
+	Val interface{}
+
+}
+
+func newMock()(mr * mockRedisC, mn * mockNsq){
+	mr = new(mockRedisC)
+	mr.orderChan = make(chan *interface{})
+	mn = new(mockNsq)
 	return
 }
 
@@ -39,24 +46,40 @@ func (m * mockRedisC) Get(key string) (s *redis.StringCmd) {
 	return
 }
 
+func (m *mockNsq) Publish(topic string, body []byte) error {
+	m.countProduce ++
+	m.Val = body
+	return nil
+}
+
 // test the client with only one producer
 func TestSaveOrderInRedis(t *testing.T) {
-	mock := newMock()
-	c, err := client.StartClient(mock, 1)
+	mockRedis, mockNsq := newMock()
+	c, err := client.StartClient(mockRedis, mockNsq, "myTopic", 1)
 	if err != nil {
 		t.Errorf("An error has occured during the client starting : %f", err)
 	}
-	<-mock.orderChan
-	if mock.countSet < 1 {
+	// wait for first order
+	<-mockRedis.orderChan
+	// and then stop immediatly
+	c.StopClient()
+	if mockRedis.countSet < 1 && mockNsq.countProduce < 1 {
 		t.Errorf("set redis not called")
 	} else {
-		var m message.Order
-		b := &bytes.Buffer{}
-		binary.Write(b, binary.BigEndian, mock.setVal)
-		json.Unmarshal(b.Bytes(), &m)
-		t.Log("the last setted value is : ", m)
+		redisVal := umarshallMess(mockRedis.setVal)
+		brokerVal := umarshallMess(mockNsq.Val)
+		if redisVal != brokerVal {
+			t.Errorf("Value store in Redis %v and value send to broker %v are differents", redisVal, brokerVal)
+		}
 	}
-	c.StopClient()
+}
+
+func umarshallMess(data interface{}) message.Order{
+	var m message.Order
+	b := &bytes.Buffer{}
+	binary.Write(b, binary.BigEndian, data)
+	json.Unmarshal(b.Bytes(), &m)
+	return m
 }
 
 
