@@ -8,19 +8,20 @@ import (
 	"flag"
 )
 
-var nbProducer int
 
 func main() {
-	flag.IntVar(&nbProducer, "nbProducer", 1, "number of producer to run")
+	nbProducer := flag.Int("nbProducer", 1, "number of producer to run")
 	flag.Parse()
-	for i:= 0; i < nbProducer; i ++ {
+	log.Printf("GO-CONCURRENCY producer module is starting with %d prducer", *nbProducer)
+	stp := make(chan *struct{})
+	for i:= 0; i < *nbProducer; i ++ {
 		startOneProducer()
 	}
+	<-stp
 
 }
 
 func startOneProducer() {
-	stp := make(chan *struct{})
 	config := nsq.NewConfig()
 	w, errN := nsq.NewProducer("127.0.0.1:4150", config)
 	if errN != nil {
@@ -31,7 +32,6 @@ func startOneProducer() {
 			log.Printf("error during redis connection: %v",errR)
 		} else {
 			client.StartClient(d, w, "orders#ephemeral", 1)
-			<-stp
 		}
 	}
 }
