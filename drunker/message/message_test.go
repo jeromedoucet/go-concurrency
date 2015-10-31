@@ -3,7 +3,7 @@ package message_test
 
 import (
 	"testing"
-	"go-concurrency/message"
+	"go-concurrency/drunker/message"
 )
 
 // basic test

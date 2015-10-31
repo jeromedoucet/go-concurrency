@@ -1,8 +1,8 @@
 package client
 import (
 	"time"
-	"go-concurrency/message"
-	"go-concurrency/producer"
+	"go-concurrency/drunker/message"
+	"go-concurrency/drunker/producer"
 	"encoding/json"
 	"log"
 	"strconv"

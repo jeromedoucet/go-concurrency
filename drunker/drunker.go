@@ -2,9 +2,9 @@ package main
 
 import (
 	"github.com/bitly/go-nsq"
-	"go-concurrency/client"
+	"go-concurrency/drunker/client"
 	"log"
-	"go-concurrency/database"
+	"go-concurrency/drunker/database"
 	"flag"
 )
 
