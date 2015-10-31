@@ -1,8 +1,8 @@
 package producer_test
 import (
 	"testing"
-	"go-concurrency/producer"
-	"go-concurrency/message"
+	"go-concurrency/drunker/producer"
+	"go-concurrency/drunker/message"
 )
 
 

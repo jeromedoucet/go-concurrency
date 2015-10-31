@@ -2,9 +2,9 @@ package client_test
 import (
 	"testing"
 	"time"
-	"go-concurrency/client"
+	"go-concurrency/drunker/client"
 	"encoding/json"
-	"go-concurrency/message"
+	"go-concurrency/drunker/message"
 	"bytes"
 	"encoding/binary"
 )

@@ -1,7 +1,7 @@
 package producer
 
 import (
-	"go-concurrency/message"
+	"go-concurrency/drunker/message"
 	"log"
 )
 
