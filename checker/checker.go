@@ -28,7 +28,7 @@ func main() {
 	port := flag.String("port", "8080", "rest interface listening port")
 	host := flag.String("host", "", "rest host")
 	rPort := flag.String("rPort", "6379", "redis db port")
-	rhost := flag.String("rHost", "", "rest host")
+	rhost := flag.String("rHost", "", "redis host")
 	flag.Parse()
 
 	r := initRedis(*rhost, *rPort)
