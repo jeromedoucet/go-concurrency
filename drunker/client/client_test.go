@@ -35,12 +35,12 @@ func (m * mockRedisC) Set(key string, value interface{}, ttl time.Duration) (err
 	m.orderChan <- &value
 	m.setVal = value
 	m.countSet ++
-	return
+	return nil
 }
 
 func (m * mockRedisC) Get(key string) (struct{}, error) {
 	m.countGet ++
-	return
+	return *new(struct{}),nil
 }
 
 func (m *mockNsq) Publish(topic string, body []byte) error {
