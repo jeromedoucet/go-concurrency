@@ -61,6 +61,7 @@ func (c * Client) listen() {
 				}
 			}
 		}else {
+			// todo think to another way on dealing error ?
 			log.Println("receive nil message. Stop client")
 			c.StopClient()
 			break
@@ -69,7 +70,11 @@ func (c * Client) listen() {
 }
 
 func (c * Client) StopClient() (err error) {
-	// todo mettre le cas d'erreur
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("Recovery on some error while trying to close channels : %f", r)
+		}
+	}()
 	close(c.stopChan)
 	close(c.mChan)
 	return
