@@ -1,7 +1,8 @@
 package message
+
 import (
-	"math/rand"
 	"fmt"
+	"math/rand"
 	"time"
 )
 
@@ -19,10 +20,10 @@ const (
 )
 
 type Order struct {
-	Id int64
+	Id       int64
 	PlayerId string
-	Valid bool
-	Type BeverageType
+	Valid    bool
+	Type     BeverageType
 }
 
 func (o Order) String() string {
@@ -30,13 +31,13 @@ func (o Order) String() string {
 }
 
 func NewOrder(t BeverageType) (o *Order) {
-	o=new(Order)
+	o = new(Order)
 	o.Type = t
-	o.Id=time.Now().UnixNano()
+	o.Id = time.Now().UnixNano()
 	return o
 }
 
 func NextBeverageType() (t BeverageType) {
-	t=BeverageType(rd.Intn(int(Cocktail)))
+	t = BeverageType(rd.Intn(int(Cocktail)))
 	return
 }

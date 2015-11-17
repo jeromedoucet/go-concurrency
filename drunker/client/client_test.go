@@ -1,50 +1,49 @@
 package client_test
+
 import (
-	"testing"
-	"time"
-	"go-concurrency/drunker/client"
-	"encoding/json"
-	"go-concurrency/drunker/message"
 	"bytes"
 	"encoding/binary"
+	"encoding/json"
+	"go-concurrency/drunker/client"
+	"go-concurrency/drunker/message"
+	"testing"
+	"time"
 )
 
 type mockRedisC struct {
-	t *testing.T
-	countSet int
-	countGet int
-	setVal interface{}
+	t         *testing.T
+	countSet  int
+	countGet  int
+	setVal    interface{}
 	orderChan chan *interface{}
 }
 
 type mockNsq struct {
 	countProduce int
-	Val interface{}
-
+	Val          interface{}
 }
 
-func newMock()(mr * mockRedisC, mn * mockNsq){
+func newMock() (mr *mockRedisC, mn *mockNsq) {
 	mr = new(mockRedisC)
 	mr.orderChan = make(chan *interface{})
 	mn = new(mockNsq)
 	return
 }
 
-
-func (m * mockRedisC) Set(key string, value interface{}, ttl time.Duration) (error) {
+func (m *mockRedisC) Set(key string, value interface{}, ttl time.Duration) error {
 	m.orderChan <- &value
 	m.setVal = value
-	m.countSet ++
+	m.countSet++
 	return nil
 }
 
-func (m * mockRedisC) Get(key string) (struct{}, error) {
-	m.countGet ++
-	return *new(struct{}),nil
+func (m *mockRedisC) Get(key string) (struct{}, error) {
+	m.countGet++
+	return *new(struct{}), nil
 }
 
 func (m *mockNsq) Publish(topic string, body []byte) error {
-	m.countProduce ++
+	m.countProduce++
 	m.Val = body
 	return nil
 }
@@ -71,12 +70,10 @@ func TestSaveOrderInRedis(t *testing.T) {
 	}
 }
 
-func umarshallMess(data interface{}) message.Order{
+func umarshallMess(data interface{}) message.Order {
 	var m message.Order
 	b := &bytes.Buffer{}
 	binary.Write(b, binary.BigEndian, data)
 	json.Unmarshal(b.Bytes(), &m)
 	return m
 }
-
-

@@ -1,21 +1,20 @@
 package main
 
 import (
+	"flag"
 	"github.com/bitly/go-nsq"
 	"go-concurrency/drunker/client"
-	"log"
 	"go-concurrency/drunker/database"
-	"flag"
+	"log"
 )
 
 var (
 	nbProducer int
-	nsqHost string
-	nsqPort string
-	redisHost string
-	redisPort string
+	nsqHost    string
+	nsqPort    string
+	redisHost  string
+	redisPort  string
 )
-
 
 func main() {
 	flag.IntVar(&nbProducer, "nbProducer", 1, "number of producer to run")
@@ -26,7 +25,7 @@ func main() {
 	flag.Parse()
 	log.Printf("GO-CONCURRENCY producer module is starting with %d prducer", nbProducer)
 	stp := make(chan *struct{})
-	for i := 0; i < nbProducer; i ++ {
+	for i := 0; i < nbProducer; i++ {
 		startOneProducer()
 	}
 	<-stp
@@ -35,7 +34,7 @@ func main() {
 
 func startOneProducer() {
 	config := nsq.NewConfig()
-	w, errN := nsq.NewProducer(nsqHost + ":" + nsqPort, config)
+	w, errN := nsq.NewProducer(nsqHost+":"+nsqPort, config)
 	if errN != nil {
 		log.Printf("error during nsq producer creation: %v", errN)
 	} else {

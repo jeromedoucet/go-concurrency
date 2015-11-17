@@ -1,16 +1,18 @@
 package main
+
 import (
-	"github.com/bmizerany/pat"
-	"net/http"
-	"log"
-	"flag"
+	"bytes"
+	"encoding/binary"
 	"encoding/json"
-	"go-concurrency/drunker/message"
-	"go-concurrency/drunker/database"
-	"go-concurrency/drunker/client"
+	"flag"
+	"github.com/bmizerany/pat"
+	"github.com/jeromedoucet/go-concurrency/drunker/client"
+	"github.com/jeromedoucet/go-concurrency/drunker/database"
+	"github.com/jeromedoucet/go-concurrency/drunker/message"
+	"log"
+	"net/http"
 	"strconv"
 )
-
 
 type checker struct {
 	redis client.DbClient
@@ -21,7 +23,6 @@ func newChecker(r client.DbClient) *checker {
 	d.redis = r
 	return d
 }
-
 
 func main() {
 	// flag parsing
@@ -49,7 +50,7 @@ func initChecker(d *checker, host, port string) {
 	m := pat.New()
 	bind(m, d)
 	http.Handle("/", m)
-	error := http.ListenAndServe(host + ":" + port, nil)
+	error := http.ListenAndServe(host+":"+port, nil)
 	if error != nil {
 		log.Printf("The server stop because of %v", error)
 	}
@@ -71,12 +72,39 @@ func (d *checker) onCheck(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Panicf("Error when trying to decode request body : %s", err.Error())
 	}
-	res, e :=d.redis.Get(strconv.Itoa(int(m.Id)))
+	res, e := d.redis.Get(strconv.Itoa(int(m.Id)))
 	if e != nil {
 		log.Panic(e)
 	}
-	if &res != nil {
-		// todo, check the stored message and store the new score !
-	}
 
+	if &res != nil {
+		//ref := message.Order(res)
+		ref := umarshallMess(res)
+
+		//Check PlayerId
+		if ref.PlayerId != m.PlayerId {
+			log.Panicf("Error PlayerIds do not match. Expected %s Actual %s", m.PlayerId, ref.PlayerId)
+		}
+
+		//Check beverage
+		if ref.Type != m.Type {
+			log.Panicf("Error Beverage Types do not match. Expected %s Actual %s", m.Type, ref.Type)
+		}
+
+		//Check OK : Try deleting key
+		e := d.redis.Remove(strconv.Itoa(int(m.Id)))
+		if e != nil {
+			log.Panic(e)
+		}
+
+		//TODO: store the new score !
+	}
+}
+
+func umarshallMess(data interface{}) message.Order {
+	var m message.Order
+	b := &bytes.Buffer{}
+	binary.Write(b, binary.BigEndian, data)
+	json.Unmarshal(b.Bytes(), &m)
+	return m
 }

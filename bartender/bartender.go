@@ -1,21 +1,20 @@
 package main
 
 import (
+	"encoding/json"
+	"flag"
+	"fmt"
 	"github.com/go-martini/martini"
 	"github.com/martini-contrib/binding"
-	"flag"
-	"log"
-	"encoding/json"
 	"gopkg.in/redis.v3"
-	"fmt"
+	"log"
 )
-
 
 var client *redis.Client
 
 type SomeData struct {
 	// see http://mholt.github.io/json-to-go/
-	ID string `json:"id"`
+	ID   string `json:"id"`
 	Name string `json:"name"`
 }
 
@@ -34,7 +33,7 @@ func main() {
 func initRedisClient(redisAddress string) {
 	fmt.Println("am I here ?")
 	client = redis.NewClient(&redis.Options{
-	Addr:     "localhost:6379",
+		Addr:     "localhost:6379",
 		Password: "", // no password set
 		DB:       0,  // use default DB
 	})
@@ -48,13 +47,12 @@ func initBartenderRestServer(port string) {
 	m := martini.Classic()
 	//	m.RunOnAddr(":" + port)
 
-
 	m.Post("/bartender/:orderId", binding.Bind(SomeData{}), func(params martini.Params, data SomeData) (int, string) {
 		orderId := params["orderId"]
 		log.Printf("orderId: %s", orderId)
 		log.Println("data=", data)
 
-		log.Println("data.name:",data.Name)
+		log.Println("data.name:", data.Name)
 
 		jsonData, _ := json.Marshal(data)
 
@@ -65,7 +63,6 @@ func initBartenderRestServer(port string) {
 
 		return 200, "requested order:" + orderId + " setting data=" + string(jsonData)
 	})
-
 
 	m.Get("/", func(params martini.Params) (int, string) {
 		return 200, "hello I'am the bartender"
