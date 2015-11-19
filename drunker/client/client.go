@@ -2,8 +2,8 @@ package client
 
 import (
 	"encoding/json"
-	"github.com/jeromedoucet/go-concurrency/drunker/message"
-	"github.com/jeromedoucet/go-concurrency/drunker/producer"
+	"go-concurrency/drunker/message"
+	"go-concurrency/drunker/producer"
 	"log"
 	"strconv"
 	"time"
