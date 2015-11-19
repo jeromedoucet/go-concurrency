@@ -3,7 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/jeromedoucet/go-concurrency/drunker/message"
+	"go-concurrency/drunker/message"
 	"net/http"
 	"testing"
 	"time"
