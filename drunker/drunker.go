@@ -95,16 +95,21 @@ func removeProducer(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(400)
 	} else {
-		nb = min(getNbProducer(), nb)
-		for i := 0; i < nb; i++ {
-			log.Println("Stopping one client")
-			clients[i].StopClient()
-			clients[i] = nil
-		}
-		clients = append(clients[:nb-1], clients[nb:]...)
+		nb = doRemove(nb)
 		w.Write([]byte("{nbProducerRemoved:" + strconv.Itoa(nb) + "}"))
 		w.WriteHeader(200)
 	}
+}
+
+func doRemove(nb int) int {
+	nb = min(getNbProducer(), nb)
+	for i := 0; i < nb; i++ {
+		log.Println("Stopping one client")
+		clients[i].StopClient()
+		clients[i] = nil
+	}
+	clients = append(clients[:nb-1], clients[nb:]...)
+	return nb
 }
 
 func getProducerNbRest(w http.ResponseWriter, r *http.Request) {

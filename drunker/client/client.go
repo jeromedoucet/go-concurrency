@@ -69,6 +69,8 @@ func (c *Client) StopClient() (err error) {
 			log.Printf("Recovery on some error while trying to close channels : %f", r)
 		}
 	}()
-	c.stopChan <- true
+	if c.stopChan != nil {
+		c.stopChan <- true
+	}
 	return
 }
