@@ -3,9 +3,9 @@ package client
 import (
 	"encoding/json"
 	"go-concurrency/drunker/message"
-	"go-concurrency/drunker/producer"
 	"log"
 	"strconv"
+	"sync"
 	"time"
 )
 
@@ -14,11 +14,11 @@ import (
 // will receive order created from some producer, register it on the Db
 // and send it to the waiters through the broker
 type Client struct {
-	mChan          chan *message.Order
-	stopChan       chan struct{}
 	redisCl        DbClient
 	brokerProducer BrokerProducer
 	topic          string
+	wg             *sync.WaitGroup
+	stopChan       chan bool
 }
 
 type DbClient interface {
@@ -33,25 +33,26 @@ type BrokerProducer interface {
 
 // create and start a new client with one DataBase client, one broker client
 // the topic to use for the broker and the number of order producer to launch
-func StartClient(dbClient DbClient, brokerProducer BrokerProducer, topic string, countP int) (c *Client, err error) {
+func StartClient(dbClient DbClient, brokerProducer BrokerProducer, topic string, wg *sync.WaitGroup) (c *Client, err error) {
 	c = new(Client)
 	c.redisCl = dbClient
 	c.brokerProducer = brokerProducer
-	c.mChan = make(chan *message.Order)
-	c.stopChan = make(chan struct{}, 1)
 	c.topic = topic
+	c.stopChan = make(chan bool, 1)
+	c.wg = wg
 	go c.listen()
-	for i := 0; i < countP; i++ {
-		p := producer.NewProducer(c.stopChan)
-		p.Start(c.mChan)
-	}
 	return
 }
 
 func (c *Client) listen() {
+	c.wg.Add(1)
 	for {
-		o := <-c.mChan
-		if o != nil {
+		select {
+		case <-c.stopChan:
+			log.Println("The client is stopping")
+			return
+		default:
+			o := message.NewOrder(message.NextBeverageType())
 			json, _ := json.Marshal(o)
 			errR := c.redisCl.Set(strconv.Itoa(int(o.Id)), json, 20)
 			if errR != nil {
@@ -62,11 +63,6 @@ func (c *Client) listen() {
 					log.Printf("error during broker registration: %v", errB)
 				}
 			}
-		} else {
-			// todo think to another way on dealing error ?
-			log.Println("receive nil message. Stop client")
-			c.StopClient()
-			break
 		}
 	}
 }
@@ -77,7 +73,7 @@ func (c *Client) StopClient() (err error) {
 			log.Printf("Recovery on some error while trying to close channels : %f", r)
 		}
 	}()
-	close(c.stopChan)
-	close(c.mChan)
+	c.wg.Done()
+	c.stopChan <- true
 	return
 }
