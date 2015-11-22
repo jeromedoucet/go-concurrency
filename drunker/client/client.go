@@ -5,7 +5,6 @@ import (
 	"go-concurrency/drunker/message"
 	"log"
 	"strconv"
-	"sync"
 	"time"
 )
 
@@ -17,7 +16,6 @@ type Client struct {
 	redisCl        DbClient
 	brokerProducer BrokerProducer
 	topic          string
-	wg             *sync.WaitGroup
 	stopChan       chan bool
 }
 
@@ -33,19 +31,17 @@ type BrokerProducer interface {
 
 // create and start a new client with one DataBase client, one broker client
 // the topic to use for the broker and the number of order producer to launch
-func StartClient(dbClient DbClient, brokerProducer BrokerProducer, topic string, wg *sync.WaitGroup) (c *Client, err error) {
+func StartClient(dbClient DbClient, brokerProducer BrokerProducer, topic string) (c *Client, err error) {
 	c = new(Client)
 	c.redisCl = dbClient
 	c.brokerProducer = brokerProducer
 	c.topic = topic
 	c.stopChan = make(chan bool, 1)
-	c.wg = wg
 	go c.listen()
 	return
 }
 
 func (c *Client) listen() {
-	c.wg.Add(1)
 	for {
 		select {
 		case <-c.stopChan:
@@ -73,7 +69,6 @@ func (c *Client) StopClient() (err error) {
 			log.Printf("Recovery on some error while trying to close channels : %f", r)
 		}
 	}()
-	c.wg.Done()
 	c.stopChan <- true
 	return
 }

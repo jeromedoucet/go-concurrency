@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"go-concurrency/drunker/client"
 	"go-concurrency/drunker/message"
-	"sync"
 	"testing"
 	"time"
 )
@@ -56,8 +55,7 @@ func (m *mockNsq) Publish(topic string, body []byte) error {
 // test the client with only one producer
 func TestSaveOrderInRedis(t *testing.T) {
 	mockRedis, mockNsq := newMock()
-	var wg sync.WaitGroup
-	c, err := client.StartClient(mockRedis, mockNsq, "myTopic", &wg)
+	c, err := client.StartClient(mockRedis, mockNsq, "myTopic")
 	if err != nil {
 		t.Errorf("An error has occured during the client starting : %f", err)
 	}
@@ -74,7 +72,6 @@ func TestSaveOrderInRedis(t *testing.T) {
 			t.Errorf("Value store in Redis %v and value send to broker %v are differents", redisVal, brokerVal)
 		}
 	}
-	c.StopClient()
 }
 
 func umarshallMess(data interface{}) message.Order {

@@ -7,26 +7,24 @@ import (
 	"go-concurrency/drunker/client"
 	"go-concurrency/drunker/database"
 	"log"
-	"sync"
 	"net/http"
 	"strconv"
 )
 
 const (
-	addProducerPath string = "/drunker/producers/add/:nb"
+	addProducerPath    string = "/drunker/producers/add/:nb"
 	removeProducerPath string = "/drunker/producers/remove/:nb"
-	getProducerNbPath string = "/drunker/producers/nb"
+	getProducerNbPath  string = "/drunker/producers/nb"
 )
 
 var (
 	nbProducer int
-	nsqHost string
-	nsqPort string
-	redisHost string
-	redisPort string
-	host string
-	port string
-	wg *sync.WaitGroup
+	nsqHost    string
+	nsqPort    string
+	redisHost  string
+	redisPort  string
+	host       string
+	port       string
 	clients    []*client.Client
 )
 
@@ -40,21 +38,19 @@ func main() {
 	flag.StringVar(&port, "port", "8088", "rest api port")
 	flag.Parse()
 	log.Printf("GO-CONCURRENCY producer module is starting with %d prducer", nbProducer)
-	wg = new(sync.WaitGroup)
 	clients = make([]*client.Client, nbProducer)
 	for i := 0; i < nbProducer; i++ {
-		startOneProducer(wg)
+		startOneProducer()
 	}
 	trimArray()
 	p := pat.New()
 	bind(p)
 	http.Handle("/", p)
-	error := http.ListenAndServe(host + ":" + port, nil)
+	error := http.ListenAndServe(host+":"+port, nil)
 	if error != nil {
 		log.Printf("The server stop because of %v", error)
 		return
 	}
-	wg.Wait()
 }
 
 func bind(p *pat.PatternServeMux) {
@@ -63,9 +59,9 @@ func bind(p *pat.PatternServeMux) {
 	p.Get(getProducerNbPath, http.HandlerFunc(getProducerNbRest))
 }
 
-func startOneProducer(wg *sync.WaitGroup) {
+func startOneProducer() {
 	config := nsq.NewConfig()
-	w, errN := nsq.NewProducer(nsqHost + ":" + nsqPort, config)
+	w, errN := nsq.NewProducer(nsqHost+":"+nsqPort, config)
 	if errN != nil {
 		log.Printf("error during nsq producer creation: %v", errN)
 	} else {
@@ -73,7 +69,7 @@ func startOneProducer(wg *sync.WaitGroup) {
 		if errR != nil {
 			log.Printf("error during redis connection: %v", errR)
 		} else {
-			c, _ := client.StartClient(d, w, "orders#ephemeral", wg)
+			c, _ := client.StartClient(d, w, "orders#ephemeral")
 			clients = append(clients, c)
 		}
 	}
@@ -86,7 +82,7 @@ func addProducer(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(400)
 	} else {
 		for i := 0; i < nb; i++ {
-			startOneProducer(wg)
+			startOneProducer()
 		}
 		w.WriteHeader(200)
 	}
@@ -100,7 +96,7 @@ func removeProducer(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(400)
 	} else {
 		nb = min(getNbProducer(), nb)
-		for i := 0; i < nb; i ++ {
+		for i := 0; i < nb; i++ {
 			log.Println("Stopping one client")
 			clients[i].StopClient()
 			clients[i] = nil
@@ -117,9 +113,9 @@ func getProducerNbRest(w http.ResponseWriter, r *http.Request) {
 }
 
 func trimArray() {
-	for i := 0; i < len(clients); i ++ {
+	for i := 0; i < len(clients); i++ {
 		if clients[i] == nil {
-			clients = append(clients[:i], clients[i + 1:]...)
+			clients = append(clients[:i], clients[i+1:]...)
 		}
 	}
 }
@@ -135,5 +131,3 @@ func min(a, b int) int {
 	}
 	return a
 }
-
-
