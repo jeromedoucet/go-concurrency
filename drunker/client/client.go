@@ -17,6 +17,8 @@ type Client struct {
 	brokerProducer BrokerProducer
 	topic          string
 	stopChan       chan bool
+	frequency      int
+	ttl 		   int
 }
 
 type DbClient interface {
@@ -31,12 +33,14 @@ type BrokerProducer interface {
 
 // create and start a new client with one DataBase client, one broker client
 // the topic to use for the broker and the number of order producer to launch
-func StartClient(dbClient DbClient, brokerProducer BrokerProducer, topic string) (c *Client, err error) {
+func StartClient(dbClient DbClient, brokerProducer BrokerProducer, topic string, f int, ttl int) (c *Client, err error) {
 	c = new(Client)
 	c.redisCl = dbClient
 	c.brokerProducer = brokerProducer
 	c.topic = topic
 	c.stopChan = make(chan bool, 1)
+	c.frequency = f
+	c.ttl = ttl
 	go c.listen()
 	return
 }
@@ -50,7 +54,8 @@ func (c *Client) listen() {
 		default:
 			o := message.NewOrder(message.NextBeverageType())
 			json, _ := json.Marshal(o)
-			errR := c.redisCl.Set(strconv.Itoa(int(o.Id)), json, 20)
+			log.Printf("json:\n%s",json)
+			errR := c.redisCl.Set(strconv.Itoa(int(o.Id)), json, time.Duration(c.ttl))
 			if errR != nil {
 				log.Printf("error during redis registration: %v", errR)
 			} else {
@@ -59,6 +64,7 @@ func (c *Client) listen() {
 					log.Printf("error during broker registration: %v", errB)
 				}
 			}
+			time.Sleep(time.Duration(time.Second * time.Duration(c.frequency)))
 		}
 	}
 }

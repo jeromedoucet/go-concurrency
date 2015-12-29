@@ -25,6 +25,8 @@ var (
 	redisPort  string
 	host       string
 	port       string
+	frequency  int
+	ttl		   int
 	clients    []*client.Client
 )
 
@@ -36,8 +38,18 @@ func main() {
 	flag.StringVar(&redisPort, "redisPort", "6379", "redis port")
 	flag.StringVar(&host, "host", "127.0.0.1", "rest api host")
 	flag.StringVar(&port, "port", "8088", "rest api port")
+	flag.IntVar(&frequency, "frequency", 1000, "max number of msg per second")
+	flag.IntVar(&ttl, "ttl", 20, "time in second to keep msg in redis")
 	flag.Parse()
 	log.Printf("GO-CONCURRENCY producer module is starting with %d prducer", nbProducer)
+	log.Printf("nsqHost: %s", nsqHost)
+	log.Printf("nsqPort: %s", nsqPort)
+	log.Printf("redisHost: %s", redisHost)
+	log.Printf("redisPort: %s", redisPort)
+	log.Printf("host: %s", host)
+	log.Printf("port: %s", port)
+	log.Printf("frequency: %d msg / second", frequency)
+	log.Printf("ttl: msg are kept %d second in redis", ttl)
 	clients = make([]*client.Client, nbProducer)
 	for i := 0; i < nbProducer; i++ {
 		startOneProducer()
@@ -69,7 +81,7 @@ func startOneProducer() {
 		if errR != nil {
 			log.Printf("error during redis connection: %v", errR)
 		} else {
-			c, _ := client.StartClient(d, w, "orders#ephemeral")
+			c, _ := client.StartClient(d, w, "orders#ephemeral", frequency, ttl)
 			clients = append(clients, c)
 		}
 	}
