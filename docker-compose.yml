@@ -1,3 +1,6 @@
+# to start infra:
+# docker-compose up -d
+
 nsqlookupd:
   image: nsqio/nsq
   ports:
@@ -14,6 +17,7 @@ nsqd:
   command: /nsqd --broadcast-address=192.168.99.100 --lookupd-tcp-address=192.168.99.100:4160
 
 
+# web ui : http://192.168.99.100:4171/
 nsqadmin:
   image: nsqio/nsq
   ports:
@@ -27,6 +31,7 @@ redis:
    - "6379:6379"
 
 
+# web ui : http://192.168.99.100:8081/
 redis-commander:
   image: tenstartups/redis-commander
   ports:
