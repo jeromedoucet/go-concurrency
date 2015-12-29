@@ -1,0 +1,36 @@
+nsqlookupd:
+  image: nsqio/nsq
+  ports:
+   - "4160:4160"
+   - "4161:4161"
+  command: /nsqlookupd
+
+
+nsqd:
+  image: nsqio/nsq
+  ports:
+   - "4150:4150"
+   - "4151:4151"
+  command: /nsqd --broadcast-address=192.168.99.100 --lookupd-tcp-address=192.168.99.100:4160
+
+
+nsqadmin:
+  image: nsqio/nsq
+  ports:
+   - "4171:4171"
+  command: /nsqadmin --lookupd-http-address=192.168.99.100:4161
+
+
+redis:
+  image: redis
+  ports:
+   - "6379:6379"
+
+
+redis-commander:
+  image: tenstartups/redis-commander
+  ports:
+   - "8081:8081"
+  links:
+   - redis
+  command: --redis-host redis
