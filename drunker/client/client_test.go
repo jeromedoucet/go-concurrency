@@ -5,9 +5,9 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"go-concurrency/drunker/client"
-	"go-concurrency/drunker/message"
 	"testing"
 	"time"
+"go-concurrency/messages"
 )
 
 type mockRedisC struct {
@@ -37,7 +37,7 @@ func (m *mockRedisC) Set(key string, value interface{}, ttl time.Duration) error
 	return nil
 }
 
-func (m *mockRedisC) Get(key string) (struct{}, error) {
+func (m *mockRedisC) Get(key string) (interface{}, error) {
 	m.countGet++
 	return *new(struct{}), nil
 }

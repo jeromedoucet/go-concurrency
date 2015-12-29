@@ -3,10 +3,10 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"go-concurrency/drunker/message"
 	"net/http"
 	"testing"
 	"time"
+	"go-concurrency/messages"
 )
 
 type testReader struct {
@@ -38,7 +38,7 @@ func (m dbMock) Set(key string, value interface{}, ttl time.Duration) error {
 	return nil
 }
 
-func (m dbMock) Get(key string) (res struct{}, err error) {
+func (m dbMock) Get(key string) (res interface{}, err error) {
 	if key == m.getKey {
 		m.goodKeyAssert(m.t)
 		res = *new(struct{})

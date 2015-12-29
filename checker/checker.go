@@ -1,17 +1,16 @@
 package main
 
 import (
-	"bytes"
-	"encoding/binary"
 	"encoding/json"
 	"flag"
 	"github.com/bmizerany/pat"
 	"go-concurrency/drunker/client"
 	"go-concurrency/drunker/database"
-	"go-concurrency/drunker/message"
 	"log"
 	"net/http"
 	"strconv"
+	"go-concurrency/messages"
+	"io"
 )
 
 type checker struct {
@@ -50,7 +49,7 @@ func initChecker(d *checker, host, port string) {
 	m := pat.New()
 	bind(m, d)
 	http.Handle("/", m)
-	error := http.ListenAndServe(host+":"+port, nil)
+	error := http.ListenAndServe(host + ":" + port, nil)
 	if error != nil {
 		log.Printf("The server stop because of %v", error)
 	}
@@ -64,47 +63,26 @@ func bind(p *pat.PatternServeMux, d *checker) {
 func (d *checker) onCheck(w http.ResponseWriter, r *http.Request) {
 	defer func() {
 		if r := recover(); r != nil {
-			log.Printf("Recovery on some error : %f", r)
+			log.Printf("Recovery on some error : %s", r)
 		}
 	}()
-	var m message.Order
-	err := json.NewDecoder(r.Body).Decode(&m)
-	if err != nil {
-		log.Panicf("Error when trying to decode request body : %s", err.Error())
-	}
+	var m message.OrderCheck
+	unmarshallRestBody(r, &m)
 	res, e := d.redis.Get(strconv.Itoa(int(m.Id)))
 	if e != nil {
 		log.Panic(e)
 	}
-
-	if &res != nil {
-		//ref := message.Order(res)
-		ref := umarshallMess(res)
-
-		//Check PlayerId
-		if ref.PlayerId != m.PlayerId {
-			log.Panicf("Error PlayerIds do not match. Expected %s Actual %s", m.PlayerId, ref.PlayerId)
-		}
-
-		//Check beverage
-		if ref.Type != m.Type {
-			log.Panicf("Error Beverage Types do not match. Expected %s Actual %s", m.Type, ref.Type)
-		}
-
-		//Check OK : Try deleting key
-		e := d.redis.Remove(strconv.Itoa(int(m.Id)))
-		if e != nil {
-			log.Panic(e)
-		}
-
-		//TODO: store the new score !
-	}
+	umarshallMess(message.GetReader(res), &m)
+	// add some check and increments score
 }
 
-func umarshallMess(data interface{}) message.Order {
-	var m message.Order
-	b := &bytes.Buffer{}
-	binary.Write(b, binary.BigEndian, data)
-	json.Unmarshal(b.Bytes(), &m)
-	return m
+func unmarshallRestBody(r *http.Request, m interface{}) {
+	umarshallMess(r.Body, m)
+}
+
+func umarshallMess(from io.Reader, to interface{}) {
+	err := json.NewDecoder(from).Decode(to)
+	if err != nil {
+		log.Panicf("Error when trying to decode request body : %s", err.Error())
+	}
 }

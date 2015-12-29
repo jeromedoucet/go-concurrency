@@ -2,10 +2,10 @@ package client
 
 import (
 	"encoding/json"
-	"go-concurrency/drunker/message"
 	"log"
 	"strconv"
 	"time"
+	"go-concurrency/messages"
 )
 
 // this client is an aggregation of one DBClient (Redis for the moment)
@@ -21,7 +21,7 @@ type Client struct {
 
 type DbClient interface {
 	Set(string, interface{}, time.Duration) error
-	Get(string) (struct{}, error)
+	Get(string) (interface{}, error)
 	Remove(string) error
 }
 

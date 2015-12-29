@@ -19,12 +19,12 @@ func (m *Redis) Set(key string, value interface{}, ttl time.Duration) (err error
 	return
 }
 
-func (m *Redis) Get(key string) (val struct{}, err error) {
+func (m *Redis) Get(key string) (val interface{}, err error) {
 	v, e := m.con.Do("GET", key)
 	if e != nil {
 		err = e
 	} else {
-		val = v.(struct{})
+		val = v
 	}
 	return
 }
