@@ -1,9 +1,9 @@
 package main
 import (
-	"github.com/bitly/go-nsq"
 	"log"
 	"flag"
 	"sync"
+	"github.com/nsqio/go-nsq"
 )
 
 
