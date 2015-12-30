@@ -67,13 +67,19 @@ func (d *checker) onCheck(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 	var m message.OrderCheck
+	var o message.Order
 	unmarshallRestBody(r, &m)
 	res, e := d.redis.Get(strconv.Itoa(int(m.Id)))
 	if e != nil {
 		log.Panic(e)
 	}
-	umarshallMess(message.GetReader(res), &m)
-	// add some check and increments score
+	umarshallMess(message.GetReader(res), &o)
+	if o.PlayerId != m.PlayerId {
+		return
+	}
+	d.redis.Remove(strconv.Itoa(int(m.Id)))
+	//todo increase the score.
+
 }
 
 func unmarshallRestBody(r *http.Request, m interface{}) {
