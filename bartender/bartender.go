@@ -57,7 +57,6 @@ func initBartenderRestServer() {
 	m := martini.Classic()
 //	m.RunOnAddr(":" + port)
 
-
 	m.Get("/", func(params martini.Params) (int, string) {
 		return 200, "hello I'am the bartender"
 	})
