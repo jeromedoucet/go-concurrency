@@ -10,7 +10,6 @@ import (
 	"go-concurrency/messages"
 	"go-concurrency/drunker/database"
 	"go-concurrency/drunker/client"
-	"io"
 )
 
 
@@ -18,34 +17,19 @@ var redisClient *redis.Client
 
 var dbClient client.DbClient
 
-//type SomeData struct {
-//	// see http://mholt.github.io/json-to-go/
-//	ID string `json:"id"`
-//	Name string `json:"name"`
-//}
-
-//type Order struct {
-//	Id int64 `json:"id"`
-//	PlayerId string `json:"playerId"`
-//	Valid bool `json:"valid"`
-//	Type string `json:"type"`
-//}
-
-
 func main() {
-	var httpServerPort *string = flag.String("http-port", "3000", "rest interface listening port")
-//	var redisAddr *string = flag.String("redis", "127.0.0.1:6379", "redis address ip:port")
 	var redisHost *string = flag.String("redisHost", "127.0.0.1", "redis address ip")
 	var redisPort *string = flag.String("redisPort", "6379", "redis port")
 	flag.Parse()
 
-	log.Printf("Http server configured on port %s", *httpServerPort)
-//	log.Printf("Redis server should be on address %s", *redisAddr)
+	log.Printf("http server listening on port 3000")
+	log.Printf("redisHost=%s", *redisHost)
+	log.Printf("redisPort=%s", *redisPort)
 
-//	initRedisClient(*redisAddr)
 	connectToRedis(*redisHost, *redisPort)
-	initBartenderRestServer(*httpServerPort)
+	initBartenderRestServer()
 }
+
 
 func connectToRedis(redisHost string, redisPort string) {
 	var errR error
@@ -55,29 +39,23 @@ func connectToRedis(redisHost string, redisPort string) {
 	}
 }
 
-//func initRedisClient(redisAddress string) {
-//	fmt.Println("redisAddress received: %s", redisAddress)
-//	redisClient = redis.NewClient(&redis.Options{
-//	Addr:     "localhost:6379",
-//		Password: "", // no password set
-//		DB:       0,  // use default DB
-//	})
-//
-//	pong, err := redisClient.Ping().Result()
-//	fmt.Println(pong, err)
-//}
 
-func umarshallMess(from io.Reader, to interface{}) {
-	err := json.NewDecoder(from).Decode(to)
-	if err != nil {
-		log.Panicf("Error when trying to decode request body : %s", err.Error())
+func B2S(bs []uint8) string {
+	b := make([]byte, len(bs))
+	for i, v := range bs {
+		if v < 0 {
+			b[i] = byte(256 + int(v))
+		} else {
+			b[i] = byte(v)
+		}
 	}
+	return string(b)
 }
 
 // init the bartender Rest server
-func initBartenderRestServer(port string) {
+func initBartenderRestServer() {
 	m := martini.Classic()
-	//	m.RunOnAddr(":" + port)
+//	m.RunOnAddr(":" + port)
 
 
 	m.Get("/", func(params martini.Params) (int, string) {
@@ -85,45 +63,18 @@ func initBartenderRestServer(port string) {
 	})
 
 
-//	// uniquement pour les tests, les orders devraient être insérés dans redis par le drunker/producer
-//	m.Post("/bartender/write/order", binding.Bind(Order{}), func(params martini.Params, order Order) (int, string) {
-//		log.Println("order=", order)
-//
-//		log.Println("order.Id:",order.Id)
-//
-//		orderAsJson, _ := json.Marshal(order)
-//
-//		err := redisClient.Set(strconv.Itoa(int(order.Id)), orderAsJson, 0).Err()
-//		if err != nil {
-//			panic(err)
-//		}
-//
-//		return 200, "order:" + strconv.Itoa(int(order.Id)) + " written in redis:" + string(orderAsJson)
-//	})
-
-
 	m.Post("/bartender/request/:playerId/:orderId", func(params martini.Params) (int, string) {
 		playerId := params["playerId"]
 		orderId := params["orderId"]
 		fmt.Println(playerId)
-//		orderIdExists, errRead := redisClient.Exists(orderId).Result()
-//		if !orderIdExists {
-//			return 404, "{ \"status\":\"KO\", \"Error\":\"No order with id " + orderId + "\"}"
-//		}
 
-//		orderJsonFromRedis, errRead := redisClient.Get(orderId).Result()
-		orderJsonFromRedis, _ := redisClient.Get(orderId).Result()
-//		fmt.Println("orderjson=", orderJsonFromRedis)
-//		if errRead != nil { // TODO: comment connaitre le type d'erreur ?
-//			return 500, "{ \"status\":\"KO\", \"Error\":\"" + errRead.Error() + "\"}"
-//		}
-
-		fmt.Println("orderJsonFromRedis=", orderJsonFromRedis)
 		var orderFromRedis message.Order
+		orderJsonFromRedis, _ := dbClient.Get(orderId)
+		fmt.Println("orderJsonFromRedis=", B2S(orderJsonFromRedis.([]uint8)))
 		if orderJsonFromRedis != "" {
 			fmt.Println("orderFromRedis!=''")
 			//orderFromRedis = message.UmarshallMess(orderJsonFromRedis)
-			json.Unmarshal([]byte(orderJsonFromRedis), &orderFromRedis)
+			json.Unmarshal(orderJsonFromRedis.([]byte), &orderFromRedis)
 		}
 
 		fmt.Printf("orderFromRedis.Id= %v \n", orderFromRedis)
@@ -136,7 +87,7 @@ func initBartenderRestServer(port string) {
 
 		fmt.Println("orderAsJson=", string(orderAsJson))
 
-		err := redisClient.Set(orderId, orderAsJson, 0).Err()
+		err := dbClient.Set(orderId, orderAsJson, 600)
 		if err != nil {
 			return 500, "{ \"status\":\"KO\", \"Error\":\"" + err.Error() + "\"}"
 		}
@@ -150,15 +101,12 @@ func initBartenderRestServer(port string) {
 
 		jsonMsg, e := dbClient.Get(orderId)
 		if e != nil {
-//			log.Panic(e)
 			return 500, "{ \"status\":\"KO\", \"Error\":\"" + e.Error() + "\"}"
 		}
 		fmt.Println(orderId, jsonMsg)
 
-		return 200, "requested order:" + orderId + " = " //  + jsonMsg
+		return 200, "requested order:" + orderId + " = " + B2S(jsonMsg.([]uint8))
 	})
-
-
 
 	m.Run()
 }
