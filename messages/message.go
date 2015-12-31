@@ -4,10 +4,6 @@ import (
 	"fmt"
 	"math/rand"
 	"time"
-	"io"
-	"bytes"
-	"encoding/gob"
-	"log"
 )
 
 type BeverageType int
@@ -56,14 +52,4 @@ func NewOrderCheck(orderId int64, playerId string) (m *OrderCheck) {
 	m.Id = orderId
 	m.PlayerId = playerId
 	return
-}
-
-func GetReader(t interface{}) (io.Reader) {
-	r  := new(bytes.Buffer)
-	enc := gob.NewEncoder(r)
-	err := enc.Encode(t)
-	if err != nil {
-		log.Panicf("Error : %f when trying to encode some interface %t into byte array", err, t)
-	}
-	return r
 }

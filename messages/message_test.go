@@ -3,7 +3,6 @@ package message_test
 import (
 	"testing"
 	"go-concurrency/messages"
-	"encoding/gob"
 )
 
 // basic test
@@ -34,21 +33,6 @@ func TestCreateNewOrderCheck(t *testing.T) {
 		t.Errorf("expecting id %d got %d ", id, m.Id)
 	} else if m.PlayerId != player {
 		t.Errorf("expecting player %s got %s ", player, m.PlayerId)
-	}
-}
-
-func TestGetReader(t *testing.T) {
-	expectedString := "toto"
-	r := message.GetReader(expectedString)
-	var currentString string
-	d := gob.NewDecoder(r)
-	err := d.Decode(&currentString)
-	if err != nil {
-		t.Errorf("test failed. error %f when decoding from reader", err)
-	} else {
-		if currentString != expectedString {
-			t.Errorf("test failed. expecting string %v is different from current one %v", expectedString, currentString)
-		}
 	}
 }
 

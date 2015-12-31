@@ -55,7 +55,7 @@ func (m *mockNsq) Publish(topic string, body []byte) error {
 // test the client with only one producer
 func TestSaveOrderInRedis(t *testing.T) {
 	mockRedis, mockNsq := newMock()
-	c, err := client.StartClient(mockRedis, mockNsq, "myTopic")
+	c, err := client.StartClient(mockRedis, mockNsq, "myTopic", 1, 30)
 	if err != nil {
 		t.Errorf("An error has occured during the client starting : %f", err)
 	}

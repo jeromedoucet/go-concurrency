@@ -4,6 +4,13 @@ import (
 	"flag"
 	"sync"
 	"github.com/nsqio/go-nsq"
+	mes "go-concurrency/messages"
+	"encoding/json"
+	"bytes"
+)
+
+var (
+	lookupaddr string = "51.254.216.243:4161"
 )
 
 
@@ -27,12 +34,15 @@ func initListener(topic, channel string) {
 		log.Panicf("error when trying to create a consumer for topic : %v and channel : %v", topic, channel)
 	}
 	// maybe possible to handle message in multiple goroutines
-	cons.AddHandler(new(Handler))
-	cons.ConnectToNSQLookupd("51.254.216.243:4161")
+	cons.AddConcurrentHandlers(new(Handler), 5)
+	cons.ConnectToNSQLookupd(lookupaddr)
 }
 
 
 func (* Handler) HandleMessage(message *nsq.Message) error {
+	var order mes.Order
 	log.Printf("get the raw message : %s", string(message.Body))
+	json.NewDecoder(bytes.NewBuffer(message.Body)).Decode(&order)
+	log.Printf("get the order : %s", order)
 	return nil
 }

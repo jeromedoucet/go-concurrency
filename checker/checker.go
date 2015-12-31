@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"go-concurrency/messages"
 	"io"
+	"bytes"
 )
 
 type checker struct {
@@ -73,7 +74,7 @@ func (d *checker) onCheck(w http.ResponseWriter, r *http.Request) {
 	if e != nil {
 		log.Panic(e)
 	}
-	umarshallMess(message.GetReader(res), &o)
+	umarshallMess(bytes.NewBuffer(res.([]byte)), &o)
 	if o.PlayerId != m.PlayerId {
 		return
 	}
