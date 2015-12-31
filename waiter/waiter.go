@@ -52,7 +52,7 @@ func (* Handler) HandleMessage(message *nsq.Message) (e error) {
 		}
 	}()
 	order := unmarshallMes(message)
-	resB := askBartender(bartenderAddr, &order)
+	resB := askBartender(askBartenderUrl(bartenderAddr, &order))
 	if resB == 200 {
 		deliver(deliverUrl(deliverAddr), createDeliverBody(&order))
 	}
@@ -67,14 +67,18 @@ func unmarshallMes (message *nsq.Message) mes.Order {
 	return order
 }
 
-func askBartender(host string, order *mes.Order) (statusCode int) {
-	resp, err := http.Post("http://" + host + "/bartender/request/" + playerId + "/" + strconv.Itoa(int(order.Id)), "text/plain", bytes.NewBufferString(""))
+func askBartender(url string) (statusCode int) {
+	resp, err := http.Post(url, "text/plain", bytes.NewBufferString(""))
 	if err != nil {
-		log.Panicf("error when trying to send post on %v ", host)
+		log.Panicf("error when trying to send post on %v ", url)
 	} else {
 		statusCode = resp.StatusCode
 	}
 	return
+}
+
+func askBartenderUrl(host string, order *mes.Order) string {
+	return "http://" + host + "/bartender/request/" + playerId + "/" + strconv.Itoa(int(order.Id))
 }
 
 func createDeliverBody(order *mes.Order) []byte {

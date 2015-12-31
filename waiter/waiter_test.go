@@ -5,17 +5,26 @@ import (
 	"net/http"
 	"go-concurrency/messages"
 	"encoding/json"
-	"sync"
+	"bytes"
 )
 
+func TestCreateDeliverBody(t *testing.T) {
+	order := message.NewOrder(message.Beer)
+	order.Id = 1234
+	b := createDeliverBody(order)
+	var body message.OrderCheck
+	json.NewDecoder(bytes.NewBuffer(b)).Decode(&body)
+	if body.Id != order.Id || body.PlayerId != playerId {
+		t.Fail()
+	}
+}
+
 func TestDeliver(t *testing.T)  {
-	var wg sync.WaitGroup
-	wg.Add(1)
+	c := make(chan bool, 2)
 	order := message.NewOrder(message.Beer)
 	order.Id = 1234
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		t.Logf("receive on request %s", r)
-		wg.Done()
+		defer func() { c <- true }()
 		if r.Method != "POST" {
 			t.Fail()
 		}
@@ -27,5 +36,31 @@ func TestDeliver(t *testing.T)  {
 	}))
 	defer ts.Close()
 	deliver(ts.URL, createDeliverBody(order))
-	wg.Wait()
+	select {
+	case <-c:
+		return
+	default:
+		t.Fail()
+	}
+}
+
+
+func TestDeliveryUrl(t *testing.T) {
+	url := deliverUrl("test")
+	if url != "http://test/orders" {
+		t.Fail()
+	}
+}
+
+func TestAskBartenderUrl(t *testing.T) {
+	order := message.NewOrder(message.Beer)
+	order.Id = 1234
+	url := askBartenderUrl("test",order)
+	if url != "http://test/bartender/request/player/1234" {
+		t.Fail()
+	}
+}
+
+func TestAskBartender(t *testing.T) {
+
 }
