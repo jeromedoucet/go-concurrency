@@ -6,6 +6,7 @@ import (
 	"go-concurrency/messages"
 	"encoding/json"
 	"bytes"
+"github.com/nsqio/go-nsq"
 )
 
 func TestCreateDeliverBody(t *testing.T) {
@@ -62,5 +63,29 @@ func TestAskBartenderUrl(t *testing.T) {
 }
 
 func TestAskBartender(t *testing.T) {
+	c := make(chan bool, 2)
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer func() { c <- true }()
+		if r.Method != "POST" {
+			t.Fail()
+		}
+	}))
+	defer ts.Close()
+	askBartender(ts.URL)
+	select {
+	case <-c:
+		return
+	default:
+		t.Fail()
+	}
+}
 
+func TestUnmarshallMes(t *testing.T) {
+	expectingOrder := message.NewOrder(message.Beer)
+	mes := new(nsq.Message)
+	mes.Body, _ = json.Marshal(expectingOrder)
+	currentOrder := unmarshallMes(mes)
+	if expectingOrder.Type != currentOrder.Type {
+		t.Fail()
+	}
 }
