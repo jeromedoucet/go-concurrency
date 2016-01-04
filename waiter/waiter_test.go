@@ -53,15 +53,6 @@ func TestDeliveryUrl(t *testing.T) {
 	}
 }
 
-func TestAskBartenderUrl(t *testing.T) {
-	order := message.NewOrder(message.Beer)
-	order.Id = 1234
-	url := askBartenderUrl("test",order)
-	if url != "http://test/bartender/request/player/1234" {
-		t.Fail()
-	}
-}
-
 func TestAskBartender(t *testing.T) {
 	c := make(chan bool, 2)
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

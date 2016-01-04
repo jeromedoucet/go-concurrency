@@ -12,14 +12,10 @@ import (
 )
 
 var (
-//	lookupaddr string = "51.254.216.243:4161"
-//	bartenderAddr string = "51.254.216.243:3000"
-//	deliverAddr string = "51.254.216.243:3002"
 	lookupaddr string = "127.0.0.1:4161"
 	bartenderAddr string = "127.0.0.1:3000"
 	deliverAddr string = "127.0.0.1:3002"
-
-
+	messageChan chan nsq.Message = make(chan nsq.Message, 20)
 	playerId string
 	topic string
 
@@ -46,6 +42,9 @@ func initListener(topic, channel string) {
 	if err != nil {
 		log.Panicf("error when trying to create a consumer for topic : %v and channel : %v", topic, channel)
 	}
+	for i := 0; i < 20; i++ {
+		go asyncTreatment()
+	}
 	// maybe possible to handle message in multiple goroutines
 	cons.AddConcurrentHandlers(new(Handler), 5)
 	cons.ConnectToNSQLookupd(lookupaddr)
@@ -53,24 +52,30 @@ func initListener(topic, channel string) {
 
 
 func (* Handler) HandleMessage(message *nsq.Message) (e error) {
-	log.Printf("receive a message %v", message)
-	go func() {
-		defer func() {
-			if r := recover(); r != nil {
-				log.Printf("receive one error %s", r)
-			}
-		}()
-		order := unmarshallMes(message)
+	messageChan <- *message
+	return
+}
+
+func asyncTreatment() {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("receive one error %s", r)
+			asyncTreatment()
+		}
+	}()
+	for {
+		message := <-messageChan
+		log.Printf("receive a message %v", message)
+		order := unmarshallMes(&message)
 		resB := askBartender(askBartenderUrl(bartenderAddr, &order))
 		log.Printf("receive a response from bartender %d", resB)
 		if resB == 200 {
 			deliver(deliverUrl(deliverAddr), createDeliverBody(&order))
 		}
-	}()
-	return
+	}
 }
 
-func unmarshallMes (message *nsq.Message) mes.Order {
+func unmarshallMes(message *nsq.Message) mes.Order {
 	var order mes.Order
 	log.Printf("get the raw message : %s", string(message.Body))
 	json.NewDecoder(bytes.NewBuffer(message.Body)).Decode(&order)
