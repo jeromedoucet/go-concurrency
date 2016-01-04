@@ -37,8 +37,16 @@ func (m *Redis) Remove(key string) (err error) {
 	return
 }
 
+func (m *Redis) Close() {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("error : %s", r)
+		}
+	}()
+	m.con.Close()
+}
+
 func NewRedis(addr string) (r *Redis, err error) {
-	log.Println("try to connect to redis on " + addr)
 	c, e := redis.Dial("tcp", addr)
 	if e != nil {
 		err = e
@@ -46,6 +54,5 @@ func NewRedis(addr string) (r *Redis, err error) {
 	}
 	r = new(Redis)
 	r.con = c
-	log.Println("Connection to redis successFull")
 	return
 }

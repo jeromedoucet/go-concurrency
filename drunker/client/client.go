@@ -25,6 +25,7 @@ type DbClient interface {
 	Set(string, interface{}, time.Duration) error
 	Get(string) (interface{}, error)
 	Remove(string) error
+	Close()
 }
 
 type BrokerProducer interface {
@@ -64,7 +65,7 @@ func (c *Client) listen() {
 					log.Printf("error during broker registration: %v", errB)
 				}
 			}
-			time.Sleep(time.Duration(time.Second * time.Duration(c.frequency)))
+		time.Sleep(time.Duration(time.Millisecond * time.Duration(c.frequency)))
 		}
 	}
 }

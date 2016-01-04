@@ -12,20 +12,28 @@ import (
 )
 
 var (
-	lookupaddr string = "51.254.216.243:4161"
-	bartenderAddr string = "51.254.216.243:3001"
-	deliverAddr string = "51.254.216.243:3002"
-	playerId string = "player"
+//	lookupaddr string = "51.254.216.243:4161"
+//	bartenderAddr string = "51.254.216.243:3000"
+//	deliverAddr string = "51.254.216.243:3002"
+	lookupaddr string = "127.0.0.1:4161"
+	bartenderAddr string = "127.0.0.1:3000"
+	deliverAddr string = "127.0.0.1:3002"
+
+
+	playerId string
+	topic string
+
 )
 
 
 func main() {
-	topic := flag.String("topic", "orders#ephemeral", "the topic to subscribe on")
-	channel := flag.String("channel", "chan#ephemeral", "the channel to use to consume topic message")// to do remove and make it empty
+	flag.StringVar(&playerId, "player", "foo", "the user name")
+	flag.StringVar(&topic, "topic", "orders", "the topic to subscribe on")
 	flag.Parse()
+	channel := playerId
 	var wg sync.WaitGroup
 	wg.Add(1)
-	initListener(*topic, *channel)
+	initListener(topic, channel)
 	wg.Wait()
 }
 
@@ -45,17 +53,20 @@ func initListener(topic, channel string) {
 
 
 func (* Handler) HandleMessage(message *nsq.Message) (e error) {
-	defer func() {
-		if r := recover(); r != nil {
-			e = r.(error)
-			return
+	log.Printf("receive a message %v", message)
+	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				log.Printf("receive one error %s", r)
+			}
+		}()
+		order := unmarshallMes(message)
+		resB := askBartender(askBartenderUrl(bartenderAddr, &order))
+		log.Printf("receive a response from bartender %d", resB)
+		if resB == 200 {
+			deliver(deliverUrl(deliverAddr), createDeliverBody(&order))
 		}
 	}()
-	order := unmarshallMes(message)
-	resB := askBartender(askBartenderUrl(bartenderAddr, &order))
-	if resB == 200 {
-		deliver(deliverUrl(deliverAddr), createDeliverBody(&order))
-	}
 	return
 }
 
@@ -69,6 +80,7 @@ func unmarshallMes (message *nsq.Message) mes.Order {
 
 func askBartender(url string) (statusCode int) {
 	resp, err := http.Post(url, "text/plain", bytes.NewBufferString(""))
+	resp.Body.Close()
 	if err != nil {
 		log.Panicf("error when trying to send post on %v ", url)
 	} else {
@@ -95,7 +107,8 @@ func deliverUrl(host string) string {
 }
 
 func deliver(url string, body []byte) {
-	_, err := http.Post(url, "application/json", bytes.NewBuffer(body))
+	resp, err := http.Post(url, "application/json", bytes.NewBuffer(body))
+	resp.Body.Close()
 	if err != nil {
 		log.Panicf("error when trying post on %v ", url)
 	}
