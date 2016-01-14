@@ -32,7 +32,7 @@ func newChecker() *checker {
 func main() {
 	// flag parsing
 	port := flag.String("port", "3002", "rest interface listening port")
-	host := flag.String("host", "0.0.0.0", "rest host")
+	host := flag.String("host", "192.168.1.2", "rest host")
 	flag.StringVar(&redisHost, "redisHost", "127.0.0.1", "redis address ip")
 	flag.StringVar(&redisPort, "redisPort", "6379", "redis port")
 	flag.Parse()
