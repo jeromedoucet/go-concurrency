@@ -15,20 +15,16 @@ import (
 // and send it to the waiters through the broker
 type Client struct {
 	redisCl        database.DbClient
-	brokerProducer BrokerProducer
+	brokerProducer message.BrokerProducer
 	topic          string
 	stopChan       chan bool
 	frequency      int
 	ttl 		   int
 }
 
-type BrokerProducer interface {
-	Publish(topic string, body []byte) error
-}
-
 // create and start a new client with one DataBase client, one broker client
 // the topic to use for the broker and the number of order producer to launch
-func StartClient(dbClient database.DbClient, brokerProducer BrokerProducer, topic string, f int, ttl int) (c *Client, err error) {
+func StartClient(dbClient database.DbClient, brokerProducer message.BrokerProducer, topic string, f int, ttl int) (c *Client, err error) {
 	c = new(Client)
 	c.redisCl = dbClient
 	c.brokerProducer = brokerProducer

@@ -19,6 +19,10 @@ const (
 	Cocktail
 )
 
+type BrokerProducer interface {
+	Publish(topic string, body []byte) error
+}
+
 type Order struct {
 	Id       int64
 	PlayerId string
