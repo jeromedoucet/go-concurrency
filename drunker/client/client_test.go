@@ -46,6 +46,10 @@ func (m *mockRedisC) Remove(key string) (err error) {
 	return
 }
 
+func (m *mockRedisC) Close() {
+	return
+}
+
 func (m *mockNsq) Publish(topic string, body []byte) error {
 	m.countProduce++
 	m.Val = body
