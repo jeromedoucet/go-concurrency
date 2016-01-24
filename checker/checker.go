@@ -4,14 +4,14 @@ import (
 	"encoding/json"
 	"flag"
 	"github.com/bmizerany/pat"
-	"go-concurrency/drunker/client"
-	"go-concurrency/drunker/database"
 	"log"
 	"net/http"
 	"strconv"
 	"go-concurrency/messages"
 	"io"
 	"bytes"
+	"go-concurrency/database"
+	"go-concurrency/database/redis"
 )
 
 var (
@@ -42,8 +42,8 @@ func main() {
 }
 
 // init the db connection
-func getRedisConnection() client.DbClient {
-	r, errR := database.NewRedis(redisHost + ":" + redisPort)
+func getRedisConnection() database.DbClient {
+	r, errR := redis.NewRedis(redisHost + ":" + redisPort)
 	if errR != nil {
 		log.Panicf("failed to connect to redis bd")
 	}

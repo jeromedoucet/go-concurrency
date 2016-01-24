@@ -5,10 +5,10 @@ import (
 	"github.com/bitly/go-nsq"
 	"github.com/bmizerany/pat"
 	"go-concurrency/drunker/client"
-	"go-concurrency/drunker/database"
 	"log"
 	"net/http"
 	"strconv"
+	"go-concurrency/database/redis"
 )
 
 const (
@@ -77,7 +77,7 @@ func startOneProducer() {
 	if errN != nil {
 		log.Printf("error during nsq producer creation: %v", errN)
 	} else {
-		d, errR := database.NewRedis(redisHost + ":" + redisPort)
+		d, errR := redis.NewRedis(redisHost + ":" + redisPort)
 		if errR != nil {
 			log.Printf("error during redis connection: %v", errR)
 		} else {

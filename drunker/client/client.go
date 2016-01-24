@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 	"go-concurrency/messages"
+	"go-concurrency/database"
 )
 
 // this client is an aggregation of one DBClient (Redis for the moment)
@@ -13,19 +14,12 @@ import (
 // will receive order created from some producer, register it on the Db
 // and send it to the waiters through the broker
 type Client struct {
-	redisCl        DbClient
+	redisCl        database.DbClient
 	brokerProducer BrokerProducer
 	topic          string
 	stopChan       chan bool
 	frequency      int
 	ttl 		   int
-}
-
-type DbClient interface {
-	Set(string, interface{}, time.Duration) error
-	Get(string) (interface{}, error)
-	Remove(string) error
-	Close()
 }
 
 type BrokerProducer interface {
@@ -34,7 +28,7 @@ type BrokerProducer interface {
 
 // create and start a new client with one DataBase client, one broker client
 // the topic to use for the broker and the number of order producer to launch
-func StartClient(dbClient DbClient, brokerProducer BrokerProducer, topic string, f int, ttl int) (c *Client, err error) {
+func StartClient(dbClient database.DbClient, brokerProducer BrokerProducer, topic string, f int, ttl int) (c *Client, err error) {
 	c = new(Client)
 	c.redisCl = dbClient
 	c.brokerProducer = brokerProducer

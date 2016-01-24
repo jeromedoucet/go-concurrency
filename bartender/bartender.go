@@ -7,11 +7,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"go-concurrency/messages"
-	"go-concurrency/drunker/database"
-	"go-concurrency/drunker/client"
 	"net/http"
 	"runtime"
 	"time"
+	"go-concurrency/database/redis"
+	"go-concurrency/database"
 )
 
 
@@ -36,8 +36,8 @@ func main() {
 }
 
 
-func connectToRedis() client.DbClient {
-	dbClient, errR := database.NewRedis(redisHost + ":" + redisPort)
+func connectToRedis() database.DbClient {
+	dbClient, errR := redis.NewRedis(redisHost + ":" + redisPort)
 	if errR != nil {
 		log.Panicf("error during redis connection: %v", errR)
 	}
