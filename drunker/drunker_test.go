@@ -1,7 +1,8 @@
 package main
+
 import (
+	"github.com/vil-coyote-acme/go-concurrency/drunker/client"
 	"testing"
-	"go-concurrency/drunker/client"
 )
 
 func TestMin(t *testing.T) {
@@ -22,8 +23,7 @@ func TestDoRemove(t *testing.T) {
 	clients = make([]*client.Client, 1)
 	clients = append(clients, new(client.Client), new(client.Client))
 	nb := doRemove(1)
-	if getNbProducer() != 1 || nb != 1{
+	if getNbProducer() != 1 || nb != 1 {
 		t.Fail()
 	}
 }
-

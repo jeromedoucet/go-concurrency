@@ -52,7 +52,7 @@ func NextBeverageType() (t BeverageType) {
 }
 
 func NewOrderCheck(orderId int64, playerId string) (m *OrderCheck) {
-	m = new (OrderCheck)
+	m = new(OrderCheck)
 	m.Id = orderId
 	m.PlayerId = playerId
 	return

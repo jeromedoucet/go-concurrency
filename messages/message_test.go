@@ -1,8 +1,8 @@
 package message_test
 
 import (
+	"github.com/vil-coyote-acme/go-concurrency/messages"
 	"testing"
-	"go-concurrency/messages"
 )
 
 // basic test
@@ -35,4 +35,3 @@ func TestCreateNewOrderCheck(t *testing.T) {
 		t.Errorf("expecting player %s got %s ", player, m.PlayerId)
 	}
 }
-

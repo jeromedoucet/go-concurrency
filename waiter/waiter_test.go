@@ -1,12 +1,13 @@
 package main
+
 import (
-	"testing"
-	"net/http/httptest"
-	"net/http"
-	"go-concurrency/messages"
-	"encoding/json"
 	"bytes"
-"github.com/nsqio/go-nsq"
+	"encoding/json"
+	"github.com/nsqio/go-nsq"
+	"github.com/vil-coyote-acme/go-concurrency/messages"
+	"net/http"
+	"net/http/httptest"
+	"testing"
 )
 
 func TestCreateDeliverBody(t *testing.T) {
@@ -20,12 +21,14 @@ func TestCreateDeliverBody(t *testing.T) {
 	}
 }
 
-func TestDeliver(t *testing.T)  {
+func TestDeliver(t *testing.T) {
 	c := make(chan bool, 2)
 	order := message.NewOrder(message.Beer)
 	order.Id = 1234
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		defer func() { c <- true }()
+		defer func() {
+			c <- true
+		}()
 		if r.Method != "POST" {
 			t.Fail()
 		}
@@ -45,7 +48,6 @@ func TestDeliver(t *testing.T)  {
 	}
 }
 
-
 func TestDeliveryUrl(t *testing.T) {
 	url := deliverUrl("test")
 	if url != "http://test/orders" {
@@ -56,7 +58,9 @@ func TestDeliveryUrl(t *testing.T) {
 func TestAskBartender(t *testing.T) {
 	c := make(chan bool, 2)
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		defer func() { c <- true }()
+		defer func() {
+			c <- true
+		}()
 		if r.Method != "POST" {
 			t.Fail()
 		}

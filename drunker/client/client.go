@@ -2,11 +2,11 @@ package client
 
 import (
 	"encoding/json"
+	"github.com/vil-coyote-acme/go-concurrency/database"
+	"github.com/vil-coyote-acme/go-concurrency/messages"
 	"log"
 	"strconv"
 	"time"
-	"go-concurrency/messages"
-	"go-concurrency/database"
 )
 
 // this client is an aggregation of one DBClient (Redis for the moment)
@@ -19,7 +19,7 @@ type Client struct {
 	topic          string
 	stopChan       chan bool
 	frequency      int
-	ttl 		   int
+	ttl            int
 }
 
 // create and start a new client with one DataBase client, one broker client
@@ -45,7 +45,7 @@ func (c *Client) listen() {
 		default:
 			o := message.NewOrder(message.NextBeverageType())
 			json, _ := json.Marshal(o)
-			log.Printf("json:\n%s",json)
+			log.Printf("json:\n%s", json)
 			errR := c.redisCl.Set(strconv.Itoa(int(o.Id)), json, time.Duration(c.ttl))
 			if errR != nil {
 				log.Printf("error during redis registration: %v", errR)
@@ -55,7 +55,7 @@ func (c *Client) listen() {
 					log.Printf("error during broker registration: %v", errB)
 				}
 			}
-		time.Sleep(time.Duration(time.Millisecond * time.Duration(c.frequency)))
+			time.Sleep(time.Duration(time.Millisecond * time.Duration(c.frequency)))
 		}
 	}
 }

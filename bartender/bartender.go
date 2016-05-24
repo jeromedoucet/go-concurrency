@@ -1,25 +1,23 @@
 package main
 
 import (
-	"github.com/go-martini/martini"
-	"flag"
-	"log"
 	"encoding/json"
+	"flag"
 	"fmt"
-	"go-concurrency/messages"
+	"github.com/go-martini/martini"
+	"github.com/vil-coyote-acme/go-concurrency/database"
+	"github.com/vil-coyote-acme/go-concurrency/database/redis"
+	"github.com/vil-coyote-acme/go-concurrency/messages"
+	"log"
 	"net/http"
 	"runtime"
 	"time"
-	"go-concurrency/database/redis"
-	"go-concurrency/database"
 )
-
 
 var (
 	redisHost string
 	redisPort string
 )
-
 
 func main() {
 	flag.StringVar(&redisHost, "redisHost", "127.0.0.1", "redis address ip")
@@ -35,7 +33,6 @@ func main() {
 	initBartenderRestServer()
 }
 
-
 func connectToRedis() database.DbClient {
 	dbClient, errR := redis.NewRedis(redisHost + ":" + redisPort)
 	if errR != nil {
@@ -43,7 +40,6 @@ func connectToRedis() database.DbClient {
 	}
 	return dbClient
 }
-
 
 func B2S(bs []uint8) string {
 	b := make([]byte, len(bs))
@@ -60,11 +56,10 @@ func B2S(bs []uint8) string {
 // init the bartender Rest server
 func initBartenderRestServer() {
 	m := martini.Classic()
-//	m.RunOnAddr(":" + port)
+	//	m.RunOnAddr(":" + port)
 	m.Get("/", func(params martini.Params) (int, string) {
 		return 200, "hello I'am the bartender"
 	})
-
 
 	m.Post("/bartender/request/:playerId/:orderId", func(params martini.Params) (int, string) {
 		defer func() {
@@ -80,12 +75,12 @@ func initBartenderRestServer() {
 
 		var orderFromRedis message.Order
 		orderJsonFromRedis, err1 := dbClient.Get(orderId)
-		if err1== nil {
+		if err1 == nil {
 			fmt.Println("orderFromRedis!=''")
 			json.Unmarshal(orderJsonFromRedis.([]byte), &orderFromRedis)
 		} else {
 			log.Printf("get an error %s", err1)
-			mes := "{ \"status\":\"KO\", \"Error\":\"no order found for "+orderId+"\"}"
+			mes := "{ \"status\":\"KO\", \"Error\":\"no order found for " + orderId + "\"}"
 			log.Print(mes)
 			return 500, mes
 		}
@@ -94,7 +89,7 @@ func initBartenderRestServer() {
 		if orderFromRedis.PlayerId != "" {
 			mes := "{ \"status\":\"KO\", \"Error\":\"order has already been requested by :" + orderFromRedis.PlayerId + "\"}"
 			log.Print(mes)
-			return 410,  mes
+			return 410, mes
 		}
 
 		orderFromRedis.PlayerId = playerId
@@ -109,7 +104,6 @@ func initBartenderRestServer() {
 		wait(orderFromRedis)
 		return 200, "{ \"status\":\"OK\" }"
 	})
-
 
 	m.Get("/read/:orderId", func(params martini.Params) (int, string) {
 		dbClient := connectToRedis()
@@ -129,7 +123,7 @@ func initBartenderRestServer() {
 	m.Run()
 }
 
-func wait(order message.Order)  {
+func wait(order message.Order) {
 	var time2Sleep int64
 	switch order.Type {
 	case message.Beer:

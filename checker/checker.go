@@ -1,17 +1,17 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"flag"
 	"github.com/bmizerany/pat"
+	"github.com/vil-coyote-acme/go-concurrency/database"
+	"github.com/vil-coyote-acme/go-concurrency/database/redis"
+	"github.com/vil-coyote-acme/go-concurrency/messages"
+	"io"
 	"log"
 	"net/http"
 	"strconv"
-	"go-concurrency/messages"
-	"io"
-	"bytes"
-	"go-concurrency/database"
-	"go-concurrency/database/redis"
 )
 
 var (
@@ -55,7 +55,7 @@ func initChecker(d *checker, host, port string) {
 	m := pat.New()
 	bind(m, d)
 	http.Handle("/", m)
-	error := http.ListenAndServe(host + ":" + port, nil)
+	error := http.ListenAndServe(host+":"+port, nil)
 	if error != nil {
 		log.Printf("The server stop because of %v", error)
 	}
@@ -110,25 +110,25 @@ func printScore() {
 	score := make(map[string]int)
 	for {
 		select {
-		case <- clearChan:
+		case <-clearChan:
 			keys = make([]string, 0)
 			score = make(map[string]int)
 		default:
-		o := <-orderChan
-		prevScore, ok := score[o.PlayerId]
-		if !ok {
-			keys = append(keys, o.PlayerId)
-			score[o.PlayerId] = getScore(&o)
-		} else {
-			score[o.PlayerId] = prevScore + getScore(&o)
+			o := <-orderChan
+			prevScore, ok := score[o.PlayerId]
+			if !ok {
+				keys = append(keys, o.PlayerId)
+				score[o.PlayerId] = getScore(&o)
+			} else {
+				score[o.PlayerId] = prevScore + getScore(&o)
+			}
+			scoreStr := ""
+			for _, k := range keys {
+				value, _ := score[k]
+				scoreStr = scoreStr + " " + k + " : " + strconv.Itoa(value)
+			}
+			log.Print(scoreStr)
 		}
-		scoreStr := ""
-		for _, k := range keys {
-			value, _ := score[k]
-			scoreStr = scoreStr + " " + k + " : " + strconv.Itoa(value)
-		}
-		log.Print(scoreStr)
-	}
 	}
 }
 

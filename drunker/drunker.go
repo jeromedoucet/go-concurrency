@@ -4,11 +4,11 @@ import (
 	"flag"
 	"github.com/bitly/go-nsq"
 	"github.com/bmizerany/pat"
-	"go-concurrency/drunker/client"
+	"github.com/vil-coyote-acme/go-concurrency/database/redis"
+	"github.com/vil-coyote-acme/go-concurrency/drunker/client"
 	"log"
 	"net/http"
 	"strconv"
-	"go-concurrency/database/redis"
 )
 
 const (
@@ -26,7 +26,7 @@ var (
 	host       string
 	port       string
 	frequency  int
-	ttl		   int
+	ttl        int
 	clients    []*client.Client
 )
 

@@ -4,10 +4,8 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/json"
-	"go-concurrency/drunker/client"
 	"testing"
 	"time"
-"go-concurrency/messages"
 )
 
 type mockRedisC struct {

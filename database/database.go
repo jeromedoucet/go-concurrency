@@ -1,4 +1,5 @@
 package database
+
 import "time"
 
 type DbClient interface {

@@ -1,26 +1,25 @@
 package main
+
 import (
-	"log"
-	"flag"
-	"sync"
-	"github.com/nsqio/go-nsq"
-	mes "go-concurrency/messages"
-	"encoding/json"
 	"bytes"
+	"encoding/json"
+	"flag"
+	"github.com/nsqio/go-nsq"
+	mes "github.com/vil-coyote-acme/go-concurrency/messages"
+	"log"
 	"net/http"
 	"strconv"
+	"sync"
 )
 
 var (
-	lookupaddr string = "127.0.0.1:4161"
-	bartenderAddr string = "127.0.0.1:3000"
-	deliverAddr string = "127.0.0.1:3002"
-	messageChan chan nsq.Message = make(chan nsq.Message, 20)
-	playerId string
-	topic string
-
+	lookupaddr    string           = "127.0.0.1:4161"
+	bartenderAddr string           = "127.0.0.1:3000"
+	deliverAddr   string           = "127.0.0.1:3002"
+	messageChan   chan nsq.Message = make(chan nsq.Message, 20)
+	playerId      string
+	topic         string
 )
-
 
 func main() {
 	flag.StringVar(&playerId, "player", "foo", "the user name")
@@ -50,8 +49,7 @@ func initListener(topic, channel string) {
 	cons.ConnectToNSQLookupd(lookupaddr)
 }
 
-
-func (* Handler) HandleMessage(message *nsq.Message) (e error) {
+func (*Handler) HandleMessage(message *nsq.Message) (e error) {
 	messageChan <- *message
 	return
 }
