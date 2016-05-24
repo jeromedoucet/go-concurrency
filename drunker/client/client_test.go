@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"testing"
 	"time"
+	"github.com/vil-coyote-acme/go-concurrency/drunker/client"
+	"github.com/vil-coyote-acme/go-concurrency/messages"
 )
 
 type mockRedisC struct {
