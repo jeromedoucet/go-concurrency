@@ -3,7 +3,7 @@
 Simple reminder of component's responsibility
 
 ## A drunker
-  Which create order for thurty Xebian, who register the order into one redis DB with a limited TTL. READY
+  Which create order for thurty Xebian, who register the order into one redis DB with a limited TTL.
 
 ## A Bartender
   Which must be called by the server in order to honour the order. It change the order into Redis with the information
