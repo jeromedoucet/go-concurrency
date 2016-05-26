@@ -1,13 +1,13 @@
 package commons_test
 
 import (
-	"io"
-	"github.com/stretchr/testify/assert"
 	"bytes"
-	"testing"
 	"encoding/json"
+	"github.com/stretchr/testify/assert"
 	"github.com/vil-coyote-acme/go-concurrency/commons"
+	"io"
 	"net/http"
+	"testing"
 )
 
 func Test_unmarshallOrder_should_unmarshal_without_error(t *testing.T) {

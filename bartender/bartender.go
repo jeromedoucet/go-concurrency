@@ -1,18 +1,18 @@
 package bartender
 
 import (
-	"net/http"
-	"log"
-	"github.com/vil-coyote-acme/go-concurrency/commons"
-	"github.com/garyburd/redigo/redis"
 	"encoding/json"
+	"github.com/garyburd/redigo/redis"
+	"github.com/vil-coyote-acme/go-concurrency/commons"
+	"log"
+	"net/http"
 )
 
 func NewBartender(redisAddr string) *Bartender {
 	b := new(Bartender)
 	b.redisAddr = redisAddr
 	b.mux = http.NewServeMux()
-	b.mux.HandleFunc("/orders", b.handleOrder)//mux server. only listen on /order request !
+	b.mux.HandleFunc("/orders", b.handleOrder) //mux server. only listen on /order request !
 	return b
 }
 

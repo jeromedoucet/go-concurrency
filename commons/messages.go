@@ -1,8 +1,8 @@
 package commons
 
 import (
-	"fmt"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -40,6 +40,6 @@ func UnmarshalOrderFromHttp(r *http.Request, order *Order) (buf []byte, err erro
 
 //todo unit test
 func UnmarshalOrderFromInterface(data interface{}, order *Order) error {
-	dec := json.NewDecoder(strings.NewReader(string(data.([]byte))))// todo do thing better
+	dec := json.NewDecoder(strings.NewReader(string(data.([]byte)))) // todo do thing better
 	return dec.Decode(&order)
 }

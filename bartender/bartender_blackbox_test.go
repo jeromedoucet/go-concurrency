@@ -1,20 +1,20 @@
 package bartender_test
 
 import (
-	"testing"
-	"github.com/garyburd/redigo/redis"
-	"github.com/vil-coyote-acme/go-concurrency/commons"
-	"encoding/json"
-	"sync"
-	"github.com/vil-coyote-acme/go-concurrency/bartender"
-	"net/http"
-	"github.com/stretchr/testify/assert"
 	"bytes"
+	"encoding/json"
+	"github.com/garyburd/redigo/redis"
+	"github.com/stretchr/testify/assert"
+	"github.com/vil-coyote-acme/go-concurrency/bartender"
+	"github.com/vil-coyote-acme/go-concurrency/commons"
+	"net/http"
+	"sync"
+	"testing"
 )
 
 var (
-	redisAddr string = "192.168.99.100:6379" // todo put the host as var ?
-	b *bartender.Bartender = bartender.NewBartender(redisAddr)
+	redisAddr string               = "192.168.99.100:6379" // todo put the host as var ?
+	b         *bartender.Bartender = bartender.NewBartender(redisAddr)
 )
 
 func Test_bartender_should_handle_order_and_check_validity_into_redis_with_success(t *testing.T) {
@@ -46,7 +46,7 @@ func Test_bartender_should_handle_order_and_check_validity_into_redis_with_succe
 
 func Test_bartender_should_handle_order_and_check_validity_into_redis_and_return_403_if_already_validated(t *testing.T) {
 	// given
-	order := commons.Order{Id: 1, Quantity: 5, Type: commons.Beer, CallBackUrl: "http://some-callback.com", Valid:true}
+	order := commons.Order{Id: 1, Quantity: 5, Type: commons.Beer, CallBackUrl: "http://some-callback.com", Valid: true}
 	bd, _ := json.Marshal(order)
 	// prepare datum into redis
 	c, _ := redis.Dial("tcp", redisAddr)
