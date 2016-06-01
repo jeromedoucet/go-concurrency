@@ -31,6 +31,20 @@ func (o Order) String() string {
 	return fmt.Sprintf("id : %d, quantity : %d, type : %d, callback : %s", o.Id, o.Quantity, o.Type, o.CallBackUrl)
 }
 
+type Registration struct {
+	PlayerId string
+	Ip       string
+}
+
+type RegistrationWrapper struct {
+	Registration
+	ResChan chan bool
+}
+
+func (r Registration) String() string {
+	return fmt.Sprintf("PlayerId : %s, Ip : %s", r.PlayerId, r.Ip)
+}
+
 func UnmarshalOrderFromHttp(r *http.Request, order *Order) (buf []byte, err error) {
 	buf = make([]byte, r.ContentLength)
 	io.ReadFull(r.Body, buf)
@@ -42,4 +56,12 @@ func UnmarshalOrderFromHttp(r *http.Request, order *Order) (buf []byte, err erro
 func UnmarshalOrderFromInterface(data interface{}, order *Order) error {
 	dec := json.NewDecoder(strings.NewReader(string(data.([]byte)))) // todo do thing better
 	return dec.Decode(&order)
+}
+
+//todo unit test
+func UnmarshalRegistrationFromHttp(r *http.Request, order *Registration) {
+	buf := make([]byte, r.ContentLength)
+	io.ReadFull(r.Body, buf)
+	json.Unmarshal(buf, &order)
+	return
 }
