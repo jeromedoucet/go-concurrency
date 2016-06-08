@@ -40,6 +40,7 @@ func (b *Bartender) handleOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	c, redisErr := redis.Dial("tcp", b.redisAddr)
+	defer c.Close()
 	if redisErr != nil {
 		log.Printf("An error happends : %s \n\r", redisErr.Error())
 		w.WriteHeader(500)
