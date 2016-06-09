@@ -42,8 +42,27 @@ func registrationEndPoint(w http.ResponseWriter, r *http.Request) {
 func handleRegistration() {
 	for {
 		// todo think about time out and test it !
-		rw := <- regChan
-		registration[rw.PlayerId] = rw.Registration
-		rw.ResChan <- true
+		rw := <-regChan
+		noConflict := hasNoConflict(&rw.Registration)
+		if noConflict {
+			registration[rw.PlayerId] = rw.Registration
+		}
+		rw.ResChan <- noConflict
 	}
+}
+
+func hasNoConflict(r *commons.Registration) (res bool) {
+	res = true
+	re, ex := registration[r.PlayerId]
+	if ex {
+		res = re.Ip == r.Ip
+		return
+	}
+	for _, val := range registration {
+		if val.Ip == r.Ip {
+			res = false
+			break
+		}
+	}
+	return
 }
