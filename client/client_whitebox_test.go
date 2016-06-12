@@ -26,17 +26,17 @@ func Test_registration_handling_should_create_produce_registration_wrapper_msg(t
 	defer s.Close()
 	// when
 	go func() {
-		res, reqErr := http.Post(s.URL + "/registration", "application/json", bytes.NewBuffer(body))
+		res, reqErr := http.Post(s.URL+"/registration", "application/json", bytes.NewBuffer(body))
 		assert.Nil(t, reqErr)
 		assert.Equal(t, 200, res.StatusCode)
 		wg.Done()
 	}()
-	wr, err := waitRegistrationTimeout(regChan, time.Second * 5)
+	wr, err := waitRegistrationTimeout(regChan, time.Second*5)
 	assert.Nil(t, err)
 	assert.Equal(t, r.Ip, wr.Ip)
 	assert.Equal(t, r.PlayerId, wr.PlayerId)
 	wr.ResChan <- true
-	timedOut := commons.WaitTimeout(wg, time.Second * 5)
+	timedOut := commons.WaitTimeout(wg, time.Second*5)
 	assert.False(t, timedOut)
 }
 
@@ -53,16 +53,16 @@ func Test_registration_handling_should_return_500_when_no_answer_from_registrati
 	defer s.Close()
 	// when
 	go func() {
-		res, reqErr := http.Post(s.URL + "/registration", "application/json", bytes.NewBuffer(body))
+		res, reqErr := http.Post(s.URL+"/registration", "application/json", bytes.NewBuffer(body))
 		assert.Nil(t, reqErr)
 		assert.Equal(t, 500, res.StatusCode)
 		wg.Done()
 	}()
-	wr, err := waitRegistrationTimeout(regChan, time.Second * 5)
+	wr, err := waitRegistrationTimeout(regChan, time.Second*5)
 	assert.Nil(t, err)
 	assert.Equal(t, r.Ip, wr.Ip)
 	assert.Equal(t, r.PlayerId, wr.PlayerId)
-	timedOut := commons.WaitTimeout(wg, time.Second * 10)
+	timedOut := commons.WaitTimeout(wg, time.Second*10)
 	assert.False(t, timedOut)
 }
 
@@ -79,17 +79,17 @@ func Test_registration_handling_should_return_403_when_refusal_from_registration
 	defer s.Close()
 	// when
 	go func() {
-		res, reqErr := http.Post(s.URL + "/registration", "application/json", bytes.NewBuffer(body))
+		res, reqErr := http.Post(s.URL+"/registration", "application/json", bytes.NewBuffer(body))
 		assert.Nil(t, reqErr)
 		assert.Equal(t, 403, res.StatusCode)
 		wg.Done()
 	}()
-	wr, err := waitRegistrationTimeout(regChan, time.Second * 5)
+	wr, err := waitRegistrationTimeout(regChan, time.Second*5)
 	assert.Nil(t, err)
 	assert.Equal(t, r.Ip, wr.Ip)
 	assert.Equal(t, r.PlayerId, wr.PlayerId)
 	wr.ResChan <- false
-	timedOut := commons.WaitTimeout(wg, time.Second * 5)
+	timedOut := commons.WaitTimeout(wg, time.Second*5)
 	assert.False(t, timedOut)
 }
 
@@ -97,8 +97,8 @@ func Test_registration_core_should_accept_new_registration(t *testing.T) {
 	// given
 	r := commons.Registration{Ip: "http://my-addr:1234", PlayerId: "id"}
 	resChan := make(chan bool)
-	rw := commons.RegistrationWrapper{Registration:r, ResChan: resChan}
-	InitRegistration()
+	rw := commons.RegistrationWrapper{Registration: r, ResChan: resChan}
+	initRegistration()
 	wg := new(sync.WaitGroup)
 	wg.Add(1)
 	// when
@@ -106,9 +106,9 @@ func Test_registration_core_should_accept_new_registration(t *testing.T) {
 		regChan <- rw
 		wg.Done()
 	}()
-	timedOut1 := commons.WaitTimeout(wg, time.Second * 5)
+	timedOut1 := commons.WaitTimeout(wg, time.Second*5)
 	assert.False(t, timedOut1)
-	res, timedOut2 := commons.WaitAnswerWithTimeOut(resChan, time.Second * 5)
+	res, timedOut2 := commons.WaitAnswerWithTimeOut(resChan, time.Second*5)
 	assert.False(t, timedOut2)
 	assert.True(t, res)
 	assert.Equal(t, r, registration[r.PlayerId])
@@ -118,8 +118,8 @@ func Test_registration_core_should_refuse_acception_when_ip_already_registered_w
 	// given
 	r := commons.Registration{Ip: "http://my-addr:1234", PlayerId: "id"}
 	resChan := make(chan bool)
-	rw := commons.RegistrationWrapper{Registration:r, ResChan: resChan}
-	InitRegistration()
+	rw := commons.RegistrationWrapper{Registration: r, ResChan: resChan}
+	initRegistration()
 	registration["id2"] = commons.Registration{Ip: "http://my-addr:1234", PlayerId: "id2"}
 	wg := new(sync.WaitGroup)
 	wg.Add(1)
@@ -128,12 +128,12 @@ func Test_registration_core_should_refuse_acception_when_ip_already_registered_w
 		regChan <- rw
 		wg.Done()
 	}()
-	timedOut1 := commons.WaitTimeout(wg, time.Second * 5)
+	timedOut1 := commons.WaitTimeout(wg, time.Second*5)
 	assert.False(t, timedOut1)
-	res, timedOut2 := commons.WaitAnswerWithTimeOut(resChan, time.Second * 5)
+	res, timedOut2 := commons.WaitAnswerWithTimeOut(resChan, time.Second*5)
 	assert.False(t, timedOut2)
 	assert.False(t, res)
-	_,pres := registration[r.PlayerId]
+	_, pres := registration[r.PlayerId]
 	assert.False(t, pres)
 }
 
@@ -141,8 +141,8 @@ func Test_registration_core_should_refuse_acception_when_playerId_already_regist
 	// given
 	r := commons.Registration{Ip: "http://my-addr:1235", PlayerId: "id"}
 	resChan := make(chan bool)
-	rw := commons.RegistrationWrapper{Registration:r, ResChan: resChan}
-	InitRegistration()
+	rw := commons.RegistrationWrapper{Registration: r, ResChan: resChan}
+	initRegistration()
 	registration["id"] = commons.Registration{Ip: "http://my-addr:1234", PlayerId: "id"}
 	wg := new(sync.WaitGroup)
 	wg.Add(1)
@@ -151,9 +151,9 @@ func Test_registration_core_should_refuse_acception_when_playerId_already_regist
 		regChan <- rw
 		wg.Done()
 	}()
-	timedOut1 := commons.WaitTimeout(wg, time.Second * 5)
+	timedOut1 := commons.WaitTimeout(wg, time.Second*5)
 	assert.False(t, timedOut1)
-	res, timedOut2 := commons.WaitAnswerWithTimeOut(resChan, time.Second * 5)
+	res, timedOut2 := commons.WaitAnswerWithTimeOut(resChan, time.Second*5)
 	assert.False(t, timedOut2)
 	assert.False(t, res)
 }
@@ -162,8 +162,8 @@ func Test_registration_core_should_accept_many_registration(t *testing.T) {
 	// given
 	r := commons.Registration{Ip: "http://my-addr:1234", PlayerId: "id"}
 	resChan := make(chan bool)
-	rw := commons.RegistrationWrapper{Registration:r, ResChan: resChan}
-	InitRegistration()
+	rw := commons.RegistrationWrapper{Registration: r, ResChan: resChan}
+	initRegistration()
 	registration["id"] = commons.Registration{Ip: "http://my-addr:1234", PlayerId: "id"}
 	wg := new(sync.WaitGroup)
 	wg.Add(1)
@@ -172,9 +172,9 @@ func Test_registration_core_should_accept_many_registration(t *testing.T) {
 		regChan <- rw
 		wg.Done()
 	}()
-	timedOut1 := commons.WaitTimeout(wg, time.Second * 5)
+	timedOut1 := commons.WaitTimeout(wg, time.Second*5)
 	assert.False(t, timedOut1)
-	res, timedOut2 := commons.WaitAnswerWithTimeOut(resChan, time.Second * 5)
+	res, timedOut2 := commons.WaitAnswerWithTimeOut(resChan, time.Second*5)
 	assert.False(t, timedOut2)
 	assert.True(t, res)
 	assert.Equal(t, r, registration[r.PlayerId])

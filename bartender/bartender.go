@@ -2,6 +2,7 @@ package bartender
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/garyburd/redigo/redis"
 	"github.com/vil-coyote-acme/go-concurrency/commons"
 	"log"
@@ -9,6 +10,7 @@ import (
 )
 
 func NewBartender(redisAddr string) *Bartender {
+	log.Println(fmt.Sprintf("bartender | create the bartender with the redis addr : %s", redisAddr))
 	b := new(Bartender)
 	b.redisAddr = redisAddr
 	b.mux = http.NewServeMux()
@@ -24,6 +26,7 @@ type Bartender struct {
 
 func (b *Bartender) Start() {
 	if !b.started {
+		log.Println("bartender | the bartender is starting, listening on 4343 port")
 		b.started = true
 		err := http.ListenAndServe(":4343", b.mux)
 		if err != nil {
@@ -39,6 +42,7 @@ func (b *Bartender) handleOrder(w http.ResponseWriter, r *http.Request) {
 		log.Printf("An error happends : %s \n\r", unMarshallErr.Error())
 		return
 	}
+	log.Println(fmt.Sprintf("Bartender | receive one order : %s", order))
 	c, redisErr := redis.Dial("tcp", b.redisAddr)
 	defer c.Close()
 	if redisErr != nil {
@@ -88,5 +92,6 @@ func (b *Bartender) handleOrder(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(500)
 		return
 	}
+	log.Println(fmt.Sprintf("Bartender | order %s successfully registered", order))
 	w.WriteHeader(200)
 }
