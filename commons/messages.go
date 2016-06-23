@@ -19,6 +19,12 @@ const (
 	Cocktail
 )
 
+const (
+	Registrate NotificationType = "registrate"
+	Unregistrate = "unregistrate"
+	Score        = "score"
+)
+
 type Order struct {
 	Id          int
 	Quantity    int
@@ -36,13 +42,26 @@ type Registration struct {
 	Ip       string
 }
 
+func (r Registration) String() string {
+	return fmt.Sprintf("PlayerId : %s, Ip : %s", r.PlayerId, r.Ip)
+}
+
 type RegistrationWrapper struct {
 	Registration
 	ResChan chan bool
 }
 
-func (r Registration) String() string {
-	return fmt.Sprintf("PlayerId : %s, Ip : %s", r.PlayerId, r.Ip)
+type NotificationType string
+
+type Notification  struct {
+	PlayerId string
+	Type NotificationType
+	Rate float64
+	Score int
+}
+
+func (n Notification) String() string {
+	return fmt.Sprintf("PlayerId : %s, Type : %s, Rate : %d, Score : %d", n.PlayerId, n.Type, n.Rate, n.Score)
 }
 
 func UnmarshalOrderFromHttp(r *http.Request, order *Order) (buf []byte, err error) {

@@ -19,6 +19,7 @@ func Test_registration_handling_should_create_produce_registration_wrapper_msg(t
 	body, _ := json.Marshal(r)
 	mux := http.NewServeMux()
 	regChan = make(chan commons.RegistrationWrapper)
+	notifChan = make(chan commons.Notification, 2)
 	initRegistrationHandling(mux)
 	s := httptest.NewServer(mux)
 	wg := new(sync.WaitGroup)
@@ -46,6 +47,7 @@ func Test_registration_handling_should_return_500_when_no_answer_from_registrati
 	body, _ := json.Marshal(r)
 	mux := http.NewServeMux()
 	regChan = make(chan commons.RegistrationWrapper)
+	notifChan = make(chan commons.Notification, 2)
 	initRegistrationHandling(mux)
 	s := httptest.NewServer(mux)
 	wg := new(sync.WaitGroup)
@@ -72,6 +74,7 @@ func Test_registration_handling_should_return_403_when_refusal_from_registration
 	body, _ := json.Marshal(r)
 	mux := http.NewServeMux()
 	regChan = make(chan commons.RegistrationWrapper)
+	notifChan = make(chan commons.Notification, 2)
 	initRegistrationHandling(mux)
 	s := httptest.NewServer(mux)
 	wg := new(sync.WaitGroup)
@@ -99,6 +102,7 @@ func Test_registration_core_should_accept_new_registration(t *testing.T) {
 	resChan := make(chan bool)
 	rw := commons.RegistrationWrapper{Registration: r, ResChan: resChan}
 	initRegistration()
+	notifChan = make(chan commons.Notification, 2)
 	wg := new(sync.WaitGroup)
 	wg.Add(1)
 	// when
@@ -120,6 +124,7 @@ func Test_registration_core_should_refuse_acception_when_ip_already_registered_w
 	resChan := make(chan bool)
 	rw := commons.RegistrationWrapper{Registration: r, ResChan: resChan}
 	initRegistration()
+	notifChan = make(chan commons.Notification, 2)
 	registration["id2"] = commons.Registration{Ip: "http://my-addr:1234", PlayerId: "id2"}
 	wg := new(sync.WaitGroup)
 	wg.Add(1)
@@ -143,6 +148,7 @@ func Test_registration_core_should_refuse_acception_when_playerId_already_regist
 	resChan := make(chan bool)
 	rw := commons.RegistrationWrapper{Registration: r, ResChan: resChan}
 	initRegistration()
+	notifChan = make(chan commons.Notification, 2)
 	registration["id"] = commons.Registration{Ip: "http://my-addr:1234", PlayerId: "id"}
 	wg := new(sync.WaitGroup)
 	wg.Add(1)
@@ -164,6 +170,7 @@ func Test_registration_core_should_accept_many_registration(t *testing.T) {
 	resChan := make(chan bool)
 	rw := commons.RegistrationWrapper{Registration: r, ResChan: resChan}
 	initRegistration()
+	notifChan = make(chan commons.Notification, 2)
 	registration["id"] = commons.Registration{Ip: "http://my-addr:1234", PlayerId: "id"}
 	wg := new(sync.WaitGroup)
 	wg.Add(1)

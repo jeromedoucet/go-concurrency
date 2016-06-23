@@ -6,21 +6,25 @@ import (
 	"time"
 	"log"
 	"fmt"
+	"github.com/vil-coyote-acme/go-concurrency/websocket"
 )
 
 var (
 	regChan      chan commons.RegistrationWrapper
 	registration map[string]commons.Registration
+	notifChan chan commons.Notification
 	rAddr string
-	started   bool
+	started bool
 )
 
-func StartClient(redisAddr string)  {
+func StartClient(redisAddr string) {
 	log.Println(fmt.Sprintf("client | create the client with the redis addr : %s", redisAddr))
 	rAddr = redisAddr
 	initRegistration()
 	mux := http.NewServeMux()
 	initRegistrationHandling(mux)
+	initWebServer(mux)
+	notifChan = websocket.SetupWebsocket(mux)
 	if !started {
 		log.Println("client | the client is starting, listening on 4444 port")
 		started = true
@@ -42,6 +46,11 @@ func initRegistrationHandling(mux *http.ServeMux) {
 	mux.HandleFunc("/registration", registrationEndPoint)
 }
 
+func initWebServer(mux *http.ServeMux) {
+	fs := http.FileServer(http.Dir("/Users/jerdct/Projects/go/src/github.com/vil-coyote-acme/go-concurrency/web/"))
+	mux.Handle("/", fs)
+}
+
 func registrationEndPoint(w http.ResponseWriter, r *http.Request) {
 	var reg commons.Registration
 	commons.UnmarshalRegistrationFromHttp(r, &reg)
@@ -49,7 +58,7 @@ func registrationEndPoint(w http.ResponseWriter, r *http.Request) {
 	regW := commons.RegistrationWrapper{Registration: reg, ResChan: make(chan bool)}
 	regChan <- regW
 	// beware here -> the producer must take in account that the consumer may be absent
-	res, timedOut := commons.WaitAnswerWithTimeOut(regW.ResChan, time.Second*5)
+	res, timedOut := commons.WaitAnswerWithTimeOut(regW.ResChan, time.Second * 5)
 	if timedOut {
 		log.Println(fmt.Sprintf("client | registration unknow issue on query : %s", reg))
 		w.WriteHeader(500)
@@ -71,6 +80,7 @@ func handleRegistration() {
 		noConflict := hasNoConflict(&rw.Registration)
 		if noConflict {
 			registration[rw.PlayerId] = rw.Registration
+			notifChan <- commons.Notification{PlayerId:rw.PlayerId, Type:commons.Registrate}
 		}
 		rw.ResChan <- noConflict
 	}
