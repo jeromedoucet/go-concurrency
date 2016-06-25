@@ -13,18 +13,17 @@ var (
 	regChan      chan commons.RegistrationWrapper
 	registration map[string]commons.Registration
 	notifChan chan commons.Notification
-	rAddr string
 	started bool
 )
 
 func StartClient(redisAddr string) {
 	log.Println(fmt.Sprintf("client | create the client with the redis addr : %s", redisAddr))
-	rAddr = redisAddr
 	initRegistration()
 	mux := http.NewServeMux()
 	initRegistrationHandling(mux)
 	initWebServer(mux)
 	notifChan = websocket.SetupWebsocket(mux)
+	initPaymentHandling(mux, redisAddr, notifChan)
 	if !started {
 		log.Println("client | the client is starting, listening on 4444 port")
 		started = true

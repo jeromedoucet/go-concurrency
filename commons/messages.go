@@ -64,6 +64,11 @@ func (n Notification) String() string {
 	return fmt.Sprintf("PlayerId : %s, Type : %s, Rate : %d, Score : %d", n.PlayerId, n.Type, n.Rate, n.Score)
 }
 
+type Credit struct {
+	PlayerId string
+	Score int
+}
+
 func UnmarshalOrderFromHttp(r *http.Request, order *Order) (buf []byte, err error) {
 	buf = make([]byte, r.ContentLength)
 	io.ReadFull(r.Body, buf)
@@ -75,6 +80,11 @@ func UnmarshalOrderFromHttp(r *http.Request, order *Order) (buf []byte, err erro
 func UnmarshalOrderFromInterface(data interface{}, order *Order) error {
 	dec := json.NewDecoder(strings.NewReader(string(data.([]byte)))) // todo do thing better
 	return dec.Decode(&order)
+}
+
+func UnmarshallCreditFromInterface(data interface{}, credit *Credit) error {
+	dec := json.NewDecoder(strings.NewReader(string(data.([]byte)))) // todo do thing better
+	return dec.Decode(&credit)
 }
 
 //todo unit test
