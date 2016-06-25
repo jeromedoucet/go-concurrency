@@ -7,6 +7,8 @@ import (
 	"github.com/vil-coyote-acme/go-concurrency/commons"
 	"log"
 	"net/http"
+	"time"
+	"math"
 )
 
 func NewBartender(redisAddr string) *Bartender {
@@ -93,5 +95,6 @@ func (b *Bartender) handleOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	log.Println(fmt.Sprintf("Bartender | order %s successfully registered", order))
+	time.Sleep(time.Duration(int(math.Pow(float64(order.Type + 1), 2.0)) * order.Quantity))
 	w.WriteHeader(200)
 }
