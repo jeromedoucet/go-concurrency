@@ -6,13 +6,22 @@ var serversocket = new WebSocket("ws://localhost:4444/websocket");
 serversocket.onmessage = function(e) {
     var notification = JSON.parse(e.data);
     console.log(notification);
-    if (notification.Type === 'registrate' || notification.Type === 'unregistrate') {
+    if (document.getElementById(notification.PlayerId)) {
+        if (notification.Type === 'unregistrate') {
+            document.getElementById(notification.PlayerId + '_state').innerHTML = 'ko' ;
+        }
+        else {
+            document.getElementById(notification.PlayerId + '_state').innerHTML = 'ok';
+            document.getElementById(notification.PlayerId + '_score').innerHTML = notification.Score + '$';
+            document.getElementById(notification.PlayerId + '_rate').innerHTML = notification.Rate + '$ / sec';
+        }
+    } else {
         var id = document.createElement("td");
         id.appendChild(document.createTextNode(notification.PlayerId));
         id.id = notification.PlayerId + '_playerId';
 
         var state = document.createElement("td");
-        state.appendChild(document.createTextNode(notification.Type === 'registrate' ? 'ok' : 'ko'));
+        state.appendChild(document.createTextNode(notification.Type === 'unregistrate' ? 'ko' : 'ok'));
         state.id = notification.PlayerId + '_state';
 
         var rate = document.createElement("td");
@@ -30,8 +39,5 @@ serversocket.onmessage = function(e) {
         tr.appendChild(rate);
         tr.appendChild(score);
         document.getElementById("table-body").appendChild(tr);
-    } else {
-        document.getElementById(notification.PlayerId + '_score').innerHTML = notification.Score + '$';
-        document.getElementById(notification.PlayerId + '_rate').innerHTML = notification.Rate + '$ / sec';
     }
 };
