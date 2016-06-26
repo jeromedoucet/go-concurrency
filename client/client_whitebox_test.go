@@ -101,7 +101,7 @@ func Test_registration_core_should_accept_new_registration(t *testing.T) {
 	r := commons.Registration{Ip: "http://my-addr:1234", PlayerId: "id"}
 	resChan := make(chan bool)
 	rw := commons.RegistrationWrapper{Registration: r, ResChan: resChan}
-	initRegistration()
+	initRegistration("192.168.99.100:6379")
 	notifChan = make(chan commons.Notification, 2)
 	wg := new(sync.WaitGroup)
 	wg.Add(1)
@@ -123,7 +123,7 @@ func Test_registration_core_should_refuse_acception_when_ip_already_registered_w
 	r := commons.Registration{Ip: "http://my-addr:1234", PlayerId: "id"}
 	resChan := make(chan bool)
 	rw := commons.RegistrationWrapper{Registration: r, ResChan: resChan}
-	initRegistration()
+	initRegistration("192.168.99.100:6379")
 	notifChan = make(chan commons.Notification, 2)
 	registration["id2"] = commons.Registration{Ip: "http://my-addr:1234", PlayerId: "id2"}
 	wg := new(sync.WaitGroup)
@@ -147,7 +147,7 @@ func Test_registration_core_should_refuse_acception_when_playerId_already_regist
 	r := commons.Registration{Ip: "http://my-addr:1235", PlayerId: "id"}
 	resChan := make(chan bool)
 	rw := commons.RegistrationWrapper{Registration: r, ResChan: resChan}
-	initRegistration()
+	initRegistration("192.168.99.100:6379")
 	notifChan = make(chan commons.Notification, 2)
 	registration["id"] = commons.Registration{Ip: "http://my-addr:1234", PlayerId: "id"}
 	wg := new(sync.WaitGroup)
@@ -169,7 +169,7 @@ func Test_registration_core_should_accept_many_registration(t *testing.T) {
 	r := commons.Registration{Ip: "http://my-addr:1234", PlayerId: "id"}
 	resChan := make(chan bool)
 	rw := commons.RegistrationWrapper{Registration: r, ResChan: resChan}
-	initRegistration()
+	initRegistration("192.168.99.100:6379")
 	notifChan = make(chan commons.Notification, 2)
 	registration["id"] = commons.Registration{Ip: "http://my-addr:1234", PlayerId: "id"}
 	wg := new(sync.WaitGroup)

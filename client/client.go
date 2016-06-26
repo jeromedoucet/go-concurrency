@@ -18,7 +18,7 @@ var (
 
 func StartClient(redisAddr string) {
 	log.Println(fmt.Sprintf("client | create the client with the redis addr : %s", redisAddr))
-	initRegistration()
+	initRegistration(redisAddr)
 	mux := http.NewServeMux()
 	initRegistrationHandling(mux)
 	initWebServer(mux)
@@ -35,10 +35,10 @@ func StartClient(redisAddr string) {
 
 }
 
-func initRegistration() {
+func initRegistration(redisAddr string) {
 	regChan = make(chan commons.RegistrationWrapper)
 	registration = make(map[string]commons.Registration, 10)
-	go handleRegistration()
+	go handleRegistration(redisAddr)
 }
 
 func initRegistrationHandling(mux *http.ServeMux) {
@@ -72,16 +72,25 @@ func registrationEndPoint(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(403)
 }
 
-func handleRegistration() {
+func handleRegistration(redisAddr string) {
+	unRegChan := make(chan commons.Registration)
 	for {
-		// todo think about time out and test it !
-		rw := <-regChan
-		noConflict := hasNoConflict(&rw.Registration)
-		if noConflict {
-			registration[rw.PlayerId] = rw.Registration
-			notifChan <- commons.Notification{PlayerId:rw.PlayerId, Type:commons.Registrate}
+		select {
+		case rw := <-regChan:
+			noConflict := hasNoConflict(&rw.Registration)
+			if noConflict {
+				registration[rw.PlayerId] = rw.Registration
+				notifChan <- commons.Notification{PlayerId:rw.PlayerId, Type:commons.Registrate}
+				// todo remove hard-coded ip
+				startNewOrderMaker("http://127.0.0.1:4444", redisAddr, rw.Registration, unRegChan)
+			}
+			rw.ResChan <- noConflict
+		case unReg := <-unRegChan:
+			delete(registration, unReg.PlayerId)
+			notifChan <- commons.Notification{PlayerId:unReg.PlayerId, Type:commons.Unregistrate}
+		default:
+			time.Sleep(time.Millisecond * 500)
 		}
-		rw.ResChan <- noConflict
 	}
 }
 

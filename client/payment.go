@@ -9,6 +9,7 @@ import (
 	"math"
 	"encoding/json"
 	"fmt"
+	"time"
 )
 
 var (
@@ -73,7 +74,7 @@ func paymentEndPoint(w http.ResponseWriter, r *http.Request) {
 	existCredit, _ := c.Do("EXISTS", urlPart[2])
 	// todo test me
 	if existCredit.(int64) != 1 {
-		credit = commons.Credit{PlayerId:urlPart[2], Score:computePaymentSum(order)}
+		credit = commons.Credit{PlayerId:urlPart[2], Score:computePaymentSum(order), Timestamp:int(time.Now().UTC().Unix())}
 	} else {
 		dataCred, _ := c.Do("GET", urlPart[2])
 		commons.UnmarshallCreditFromInterface(dataCred, &credit)
@@ -88,7 +89,7 @@ func paymentEndPoint(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	log.Println(fmt.Sprintf("payment | credit %s successfully registered", credit))
-	func () {ch <- commons.Notification{PlayerId:credit.PlayerId, Type:commons.Score, Score:credit.Score}} ()
+	func () {ch <- commons.Notification{PlayerId:credit.PlayerId, Type:commons.Score, Score:credit.Score, Rate:float64(credit.Score) / float64((int(time.Now().UTC().Unix()) - credit.Timestamp))}} ()
 	w.WriteHeader(200)
 }
 

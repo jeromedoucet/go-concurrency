@@ -29,6 +29,7 @@ type Order struct {
 	Id          int
 	Quantity    int
 	Type        BeverageType
+	PlayerId    string
 	CallBackUrl string
 	Valid       bool
 }
@@ -67,10 +68,11 @@ func (n Notification) String() string {
 type Credit struct {
 	PlayerId string
 	Score int
+	Timestamp int
 }
 
-func UnmarshalOrderFromHttp(r *http.Request, order *Order) (buf []byte, err error) {
-	buf = make([]byte, r.ContentLength)
+func UnmarshalOrderFromHttp(r *http.Request, order *Order) (err error) {
+	buf := make([]byte, r.ContentLength)
 	io.ReadFull(r.Body, buf)
 	err = json.Unmarshal(buf, &order)
 	return
