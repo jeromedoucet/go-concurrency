@@ -7,6 +7,7 @@ import (
 	"log"
 	"fmt"
 	"github.com/vil-coyote-acme/go-concurrency/websocket"
+	"os"
 )
 
 var (
@@ -46,7 +47,7 @@ func initRegistrationHandling(mux *http.ServeMux) {
 }
 
 func initWebServer(mux *http.ServeMux) {
-	fs := http.FileServer(http.Dir("/Users/jerdct/Projects/go/src/github.com/vil-coyote-acme/go-concurrency/web/"))
+	fs := http.FileServer(http.Dir(os.Getenv("GOPATH") + "/src/github.com/vil-coyote-acme/go-concurrency/web/"))
 	mux.Handle("/", fs)
 }
 
