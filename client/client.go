@@ -83,7 +83,7 @@ func handleRegistration(redisAddr string) {
 				registration[rw.PlayerId] = rw.Registration
 				notifChan <- commons.Notification{PlayerId:rw.PlayerId, Type:commons.Registrate}
 				// todo remove hard-coded ip
-				startNewOrderMaker("http://127.0.0.1:4444", redisAddr, rw.Registration, unRegChan)
+				startNewOrderMaker("http://10.100.8.6:4444", redisAddr, rw.Registration, unRegChan)
 			}
 			rw.ResChan <- noConflict
 		case unReg := <-unRegChan:

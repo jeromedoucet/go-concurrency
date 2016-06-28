@@ -22,6 +22,7 @@ func startNewOrderMaker(url string, rAddr string, reg commons.Registration, unRe
 			return
 		}
 		defer c.Close()
+		decCount := 0;
 		for {
 			id := int(time.Now().UTC().UnixNano())
 			t := r.Intn(6)
@@ -30,9 +31,16 @@ func startNewOrderMaker(url string, rAddr string, reg commons.Registration, unRe
 			bdOrder, _ := json.Marshal(o)
 			c.Do("SET", o.Id, string(bdOrder))
 			resp, err := http.Post(reg.Ip+"/orders", "application/json", bytes.NewBuffer(bdOrder))
+
 			if err != nil || resp.StatusCode != 200 {
-				unRegChan <- reg
-				return
+				decCount ++
+				if decCount >= 3 {
+					unRegChan <- reg
+					return
+				}
+				time.Sleep(5 * time.Second)
+			} else {
+				decCount = 0
 			}
 		}
 	}()
