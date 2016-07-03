@@ -83,10 +83,39 @@ func (b *Bartender) handleOrder(w http.ResponseWriter, r *http.Request) {
 		}()
 		b.doHandleOrder(w, r, order)
 	default:
-	// no token
-	w.WriteHeader(403)
+		b.doApplyPenalty(w, r, order)
 	}
 
+}
+
+func (b*Bartender) doApplyPenalty(w http.ResponseWriter, r *http.Request, order commons.Order) {
+	var credit commons.Credit
+	c, redisErr := redis.Dial("tcp", b.redisAddr)
+	defer c.Close()
+	// todo test me
+	if redisErr != nil {
+		log.Printf("payment | An error happends : %s \n\r", redisErr.Error())
+		w.WriteHeader(500)
+		return
+	}
+	existCredit, _ := c.Do("EXISTS", order.PlayerId)
+	// todo test me
+	if existCredit.(int64) != 1 {
+		credit = commons.Credit{PlayerId:order.PlayerId, Score: -10000, Timestamp:int(time.Now().UTC().Unix())}
+	} else {
+		dataCred, _ := c.Do("GET", order.PlayerId)
+		commons.UnmarshallCreditFromInterface(dataCred, &credit)
+		credit.Score += -10000
+	}
+
+	bd, _ := json.Marshal(credit)
+	_, saveErr := c.Do("SET", credit.PlayerId, string(bd))
+	if saveErr != nil {
+		log.Printf("An error happends : %s \n\r", saveErr.Error())
+		w.WriteHeader(500)
+		return
+	}
+	w.WriteHeader(403)
 }
 
 func (b*Bartender) doHandleOrder(w http.ResponseWriter, r *http.Request, order commons.Order) {

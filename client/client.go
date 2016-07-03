@@ -15,6 +15,7 @@ var (
 	registration map[string]commons.Registration
 	notifChan chan commons.Notification
 	started bool
+	MyAddr string = "http://127.0.0.1:4444"
 )
 
 func StartClient(redisAddr string) {
@@ -83,7 +84,7 @@ func handleRegistration(redisAddr string) {
 				registration[rw.PlayerId] = rw.Registration
 				notifChan <- commons.Notification{PlayerId:rw.PlayerId, Type:commons.Registrate}
 				// todo remove hard-coded ip
-				startNewOrderMaker("http://10.100.8.6:4444", redisAddr, rw.Registration, unRegChan)
+				startNewOrderMaker(MyAddr, redisAddr, rw.Registration, unRegChan)
 			}
 			rw.ResChan <- noConflict
 		case unReg := <-unRegChan:
