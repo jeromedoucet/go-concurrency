@@ -10,9 +10,6 @@ import (
 	"encoding/json"
 )
 
-// fixme I am too complex !
-// todo send all states when connection happend
-
 var (
 	conChan chan *webSocketWrapper
 	wsSlice []*webSocketWrapper

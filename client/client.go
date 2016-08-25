@@ -15,11 +15,12 @@ var (
 	registration map[string]commons.Registration
 	notifChan chan commons.Notification
 	started bool
-	MyAddr string = "http://127.0.0.1:4444"
+	MyAddr string
 )
 
-func StartClient(redisAddr string) {
-	log.Println(fmt.Sprintf("client | create the client with the redis addr : %s", redisAddr))
+func StartClient(redisAddr string, myAddr string, myPort string) {
+	log.Println(fmt.Sprintf("client | create the client with the redis addr : %s and the client addr : %s", redisAddr, myAddr))
+	MyAddr = myAddr
 	initRegistration(redisAddr)
 	mux := http.NewServeMux()
 	initRegistrationHandling(mux)
@@ -29,7 +30,7 @@ func StartClient(redisAddr string) {
 	if !started {
 		log.Println("client | the client is starting, listening on 4444 port")
 		started = true
-		err := http.ListenAndServe(":4444", mux)
+		err := http.ListenAndServe(":" + myPort, mux)
 		if err != nil {
 			log.Fatal(err.Error())
 		}

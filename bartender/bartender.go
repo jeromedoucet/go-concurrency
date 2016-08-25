@@ -11,8 +11,13 @@ import (
 	"math"
 )
 
-func NewBartender(redisAddr string) *Bartender {
+var (
+	httpPort string
+)
+
+func NewBartender(redisAddr string, myPort string) *Bartender {
 	log.Println(fmt.Sprintf("bartender | create the bartender with the redis addr : %s", redisAddr))
+	httpPort = myPort
 	b := new(Bartender)
 	b.redisAddr = redisAddr
 	b.mux = http.NewServeMux()
@@ -37,10 +42,10 @@ type tokenReq struct {
 
 func (b *Bartender) Start() {
 	if !b.started {
-		log.Println("bartender | the bartender is starting, listening on 4343 port")
+		log.Println(fmt.Sprintf("bartender | the bartender is starting, listening on %s port", httpPort))
 		b.started = true
 		b.tokenProviderLoop()
-		err := http.ListenAndServe(":4343", b.mux)
+		err := http.ListenAndServe(":" + httpPort, b.mux)
 		if err != nil {
 			log.Fatal(err.Error())
 		}

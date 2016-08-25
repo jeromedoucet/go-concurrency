@@ -14,7 +14,7 @@ import (
 
 var (
 	redisAddr string               = "192.168.99.100:6379" // todo put the host as var ?
-	b         *bartender.Bartender = bartender.NewBartender(redisAddr)
+	b         *bartender.Bartender = bartender.NewBartender(redisAddr, "4343")
 )
 
 func Test_bartender_should_handle_order_and_check_validity_into_redis_with_success(t *testing.T) {
