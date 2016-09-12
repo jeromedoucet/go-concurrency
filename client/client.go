@@ -16,11 +16,13 @@ var (
 	notifChan chan commons.Notification
 	started bool
 	MyAddr string
+	MyPort string
 )
 
 func StartClient(redisAddr string, myAddr string, myPort string) {
 	log.Println(fmt.Sprintf("client | create the client with the redis addr : %s and the client addr : %s", redisAddr, myAddr))
 	MyAddr = myAddr
+	MyPort = myPort
 	initRegistration(redisAddr)
 	mux := http.NewServeMux()
 	initRegistrationHandling(mux)
@@ -84,8 +86,7 @@ func handleRegistration(redisAddr string) {
 			if noConflict {
 				registration[rw.PlayerId] = rw.Registration
 				notifChan <- commons.Notification{PlayerId:rw.PlayerId, Type:commons.Registrate}
-				// todo remove hard-coded ip
-				startNewOrderMaker(MyAddr, redisAddr, rw.Registration, unRegChan)
+				startNewOrderMaker(MyAddr + ":" + MyPort, redisAddr, rw.Registration, unRegChan)
 			}
 			rw.ResChan <- noConflict
 		case unReg := <-unRegChan:

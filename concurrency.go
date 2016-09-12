@@ -26,7 +26,7 @@ func main() {
 	case "bartender":
 		bartender.NewBartender(redisAddr, myPort).Start()
 	case "client":
-		client.StartClient(redisAddr, myAddr, myPort)
+		client.StartClient(redisAddr, "http://" + myAddr, myPort)
 	default:
 		panic(fmt.Sprintf("unknow component. Got : %s", component))
 	}
